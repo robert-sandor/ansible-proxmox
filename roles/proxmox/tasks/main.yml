@@ -6,9 +6,16 @@
 - ansible.builtin.import_tasks: acme/enable_acme.yml
 - ansible.builtin.import_tasks: install_nginx.yml
 
-- ansible.builtin.include_tasks: create_cloudimg_template.yml
+- ansible.builtin.include_tasks: create_template.yml
   vars:
     template: "{{ template }}"
   with_items: "{{ templates }}"
   loop_control:
     loop_var: template
+
+- ansible.builtin.include_tasks: create_clones.yml
+  vars:
+    clone: "{{ clone }}"
+  with_items: "{{ clones }}"
+  loop_control:
+    loop_var: clone
