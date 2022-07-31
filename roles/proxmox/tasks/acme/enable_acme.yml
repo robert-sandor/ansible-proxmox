@@ -1,0 +1,53 @@
+---
+- name: Get ACME TOS URL
+  ansible.builtin.shell: pvesh get /cluster/acme/tos
+  register: tos_url
+  changed_when: false
+
+- name: Get ACME accounts
+  ansible.builtin.shell: pvesh get /cluster/acme/account --output-format json
+  register: acme_accounts
+  changed_when: false
+
+- name: Set account name
+  ansible.builtin.set_fact:
+    acme_account_name: "{{ 'staging' if acme_staging else 'production' }}"
+
+- name: Add ACME account
+  vars:
+    acme_url: "https://acme-{{ 'staging' if acme_staging else '' }}-v02.api.letsencrypt.org/directory"
+  ansible.builtin.shell: >
+    pvesh create /cluster/acme/account
+    --contact {{ acme_email }}
+    --directory {{ acme_url }}
+    --name {{ acme_account_name }}
+    --tos_url {{ tos_url.stdout }}
+  when: "acme_account_name not in acme_accounts.stdout | from_json | json_query('[].name')"
+
+- ansible.builtin.include_tasks: enable_plugin_{{ acme_plugin_name }}.yml
+
+- name: Get node configuration
+  ansible.builtin.shell: pvesh get /nodes/{{ ansible_facts.hostname }}/config --output-format json
+  register: node_config
+  changed_when: false
+
+- name: Set ACME configuration on node
+  vars:
+    acme_account_config: account={{ acme_account_name }}
+    acme_domain_config: "{{ ansible_facts.hostname }}.{{ domain }},plugin={{ acme_plugin_name }}"
+  ansible.builtin.shell: >
+    pvesh set /nodes/{{ ansible_facts.hostname }}/config
+    --acme {{ acme_account_config }}
+    --acmedomain0 {{ acme_domain_config }}
+  when: >
+    acme_account_config not in node_config.stdout | from_json | json_query('acme') or
+    acme_domain_config not in node_config.stdout | from_json | json_query('acmedomain0')
+
+- name: Get certificate info
+  ansible.builtin.shell: pvesh get /nodes/{{ ansible_facts.hostname }}/certificates/info --output-format json
+  register: certificate_info
+  changed_when: false
+
+- name: Order new certificate
+  ansible.builtin.shell: pvesh create /nodes/{{ ansible_facts.hostname }}/certificates/acme/certificate
+  when: "'pveproxy-ssl.pem' not in certificate_info.stdout | from_json | json_query('[].filename') "

@@ -1,0 +1,9 @@
+---
+domain: example.com
+
+acme_email: changeme@email.com
+acme_staging: true
+acme_plugin_name: cloudflare
+acme_plugin_type: dns
+acme_plugin_cloudflare_email: changeme@email.com
+acme_plugin_cloudflare_token: changeme

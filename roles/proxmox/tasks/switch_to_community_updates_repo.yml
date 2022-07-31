@@ -1,0 +1,16 @@
+---
+- name: Remove pve-enterprise repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb https://enterprise.proxmox.com/debian/pve bullseye pve-enterprise
+    state: absent
+    update_cache: true
+    filename: pve-enterprise
+
+- name: Add pve-no-subscription repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb http://download.proxmox.com/debian/pve bullseye pve-no-subscription
+    state: present
+    update_cache: true
+    filename: pve-no-subscription
