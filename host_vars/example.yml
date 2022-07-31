@@ -7,3 +7,11 @@ acme_plugin_name: cloudflare
 acme_plugin_type: dns
 acme_plugin_cloudflare_email: changeme@email.com
 acme_plugin_cloudflare_token: changeme
+
+templates:
+  - vmid: 9000
+    name: ubuntu-2204
+    cloud_image_url: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
+  - vmid: 9001
+    name: debian-bullseye
+    cloud_image_url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-genericcloud-amd64.qcow2
