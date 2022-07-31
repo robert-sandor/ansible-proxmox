@@ -50,4 +50,4 @@
 
 - name: Order new certificate
   ansible.builtin.shell: pvesh create /nodes/{{ ansible_facts.hostname }}/certificates/acme/certificate
-  when: "'pveproxy-ssl.pem' not in certificate_info.stdout | from_json | json_query('[].filename') "
+  when: "'pveproxy-ssl.pem' not in certificate_info.stdout | from_json | json_query('[].filename')"
