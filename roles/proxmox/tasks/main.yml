@@ -4,3 +4,10 @@
 - ansible.builtin.import_tasks: disable_subscription_prompt.yml
 - ansible.builtin.import_tasks: install_pve_dark_theme.yml
 - ansible.builtin.import_tasks: acme/enable_acme.yml
+
+- ansible.builtin.include_tasks: create_cloudimg_template.yml
+  vars:
+    template: "{{ template }}"
+  with_items: "{{ templates }}"
+  loop_control:
+    loop_var: template
