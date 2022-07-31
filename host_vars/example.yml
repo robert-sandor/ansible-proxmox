@@ -15,3 +15,11 @@ templates:
   - vmid: 9001
     name: debian-bullseye
     cloud_image_url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-genericcloud-amd64.qcow2
+
+clones: 
+  - vmid: 200
+    template: 9001
+    name: k8s-master
+  - vmid: 201
+    template: 9001
+    name: k8s-node
