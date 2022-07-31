@@ -15,7 +15,7 @@
 
 - name: Add ACME account
   vars:
-    acme_url: "https://acme-{{ 'staging' if acme_staging else '' }}-v02.api.letsencrypt.org/directory"
+    acme_url: "https://acme{{ '-staging' if acme_staging else '' }}-v02.api.letsencrypt.org/directory"
   ansible.builtin.shell: >
     pvesh create /cluster/acme/account
     --contact {{ acme_email }}
@@ -51,3 +51,7 @@
 - name: Order new certificate
   ansible.builtin.shell: pvesh create /nodes/{{ ansible_facts.hostname }}/certificates/acme/certificate
   when: "'pveproxy-ssl.pem' not in certificate_info.stdout | from_json | json_query('[].filename')"
+
+- name: Wait for certificate file
+  ansible.builtin.wait_for:
+    path: /etc/pve/local/pveproxy-ssl.pem
