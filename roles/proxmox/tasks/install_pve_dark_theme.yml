@@ -2,7 +2,7 @@
 - name: Download PVEDiscordDark install script
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/Weilbyte/PVEDiscordDark/master/PVEDiscordDark.sh
-    dest: /tmp
+    dest: /opt
     mode: 0755
 
 - name: Run PVEDiscordDark install script
@@ -10,8 +10,3 @@
   register: output
   changed_when: output.rc == 0
   failed_when: output.rc == 1
-
-- name: Remove PVEDiscordDark install script
-  ansible.builtin.file:
-    path: /tmp/PVEDiscordDark.sh
-    state: absent
