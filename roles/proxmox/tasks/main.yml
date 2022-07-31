@@ -7,15 +7,16 @@
 - ansible.builtin.import_tasks: install_nginx.yml
 
 - ansible.builtin.include_tasks: create_template.yml
-  vars:
-    template: "{{ template }}"
   with_items: "{{ templates }}"
   loop_control:
     loop_var: template
 
 - ansible.builtin.include_tasks: create_clones.yml
-  vars:
-    clone: "{{ clone }}"
   with_items: "{{ clones }}"
   loop_control:
     loop_var: clone
+
+- ansible.builtin.include_tasks: configure_vms.yml
+  with_items: "{{ vms }}"
+  loop_control:
+    loop_var: vm

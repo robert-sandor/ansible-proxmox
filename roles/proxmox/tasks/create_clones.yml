@@ -8,5 +8,4 @@
   ansible.builtin.shell: >
     pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ clone.template }}/clone
     --newid {{ clone.vmid }}
-    --name {{ clone.name }}
   when: clone.vmid not in existing_vms.stdout | from_json | json_query('[].vmid')
