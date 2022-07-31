@@ -4,7 +4,7 @@
   register: existing_vms
   changed_when: false
 
-- name: Clone {{ clone.name }} from template {{ clone.template }}
+- name: Clone {{ clone.vmid }} from template {{ clone.template }}
   ansible.builtin.shell: >
     pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ clone.template }}/clone
     --newid {{ clone.vmid }}
