@@ -16,3 +16,19 @@
     backup: true
     mode: 0644
   notify: restart nginx
+
+- name: Ensure /etc/systemd/system/nginx.service.d exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/nginx.service.d
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Set nginx to start after pve-cluster
+  ansible.builtin.copy:
+    src: files/nginx-override.conf
+    dest: /etc/systemd/system/nginx.service.d/override.conf
+    mode: 0644
+    owner: root
+    group: root
