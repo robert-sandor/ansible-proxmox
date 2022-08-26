@@ -10,12 +10,9 @@
 - name: Update ISO images
   vars:
     iso_names: "{{ storage.isos | map('basename') }}"
-    existing_iso_names: 
+    existing_iso_names:
       "{{ existing_iso_files.stdout | from_json | json_query('[].volid') | map('basename') }}"
   block:
-    - debug: var=iso_names
-    - debug: var=existing_iso_names
-
     - name: Download ISO images
       ansible.builtin.shell: >-
         pvesh create /nodes/{{ ansible_facts.hostname }}/storage/{{ storage.name }}/download-url
