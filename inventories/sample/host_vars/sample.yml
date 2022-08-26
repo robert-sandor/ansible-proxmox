@@ -16,14 +16,9 @@ templates:
     name: debian-bullseye
     cloud_image_url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-genericcloud-amd64.qcow2
 
-clones:
-  - vmid: 200
-    template: 9001
-  - vmid: 201
-    template: 9001
-
 vms:
   - vmid: 200
+    template: 9001
     name: k8s-master
     cpus: 4
     memory: 4096
@@ -37,6 +32,7 @@ vms:
       - disk: scsi0
         size: 50G
   - vmid: 201
+    template: 9001
     name: k8s-node
     cpus: 4
     memory: 4096
@@ -49,3 +45,20 @@ vms:
     storage:
       - disk: scsi0
         size: 50G
+  - vmid: 202
+    name: example-vm
+    cpus: 4
+    memory: 4096
+    onboot: true
+    user: changeme
+    ssh_keys: changeme
+    network:
+      cidr: '192.168.1.100/24'
+      gateway: '192.168.1.1'
+    storage:
+      - disk: scsi0
+        size: 50G
+        location: local-lvm
+        name: disk-0
+    snapshots:
+      - created
