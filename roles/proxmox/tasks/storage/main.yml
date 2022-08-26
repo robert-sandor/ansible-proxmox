@@ -4,3 +4,9 @@
   with_items: "{{ storages }}"
   loop_control:
     loop_var: storage
+
+- ansible.builtin.include_tasks: manage_ct_templates.yml
+  when: storage.ct_templates is defined
+  with_items: "{{ storages }}"
+  loop_control:
+    loop_var: storage

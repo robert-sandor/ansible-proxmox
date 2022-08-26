@@ -77,7 +77,7 @@
     loop_var: netdev
 
 - name: Configure snapshots
-  ansible.builtin.include_tasks: configure_snapshots_for_vm.yml
+  ansible.builtin.import_tasks: configure_snapshots_for_vm.yml
   vars:
     vmid: "{{ vm.vmid }}"
     snapshots: "{{ vm.snapshots }}"

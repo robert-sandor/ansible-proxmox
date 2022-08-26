@@ -12,6 +12,8 @@ storages:
   - name: local
     isos:
       - https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-11.4.0-amd64-netinst.iso
+    ct_templates:
+      - ubuntu-20.04-standard_22.04-1_amd64.tar.zst
 
 templates:
   - vmid: 9000
