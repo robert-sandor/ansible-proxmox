@@ -36,6 +36,7 @@ vms:
     storage:
       - disk: scsi0
         size: 50G
+
   - vmid: 201
     template: 9001
     name: k8s-node
@@ -50,20 +51,23 @@ vms:
     storage:
       - disk: scsi0
         size: 50G
+
   - vmid: 202
     name: example-vm
     cpus: 4
     memory: 4096
-    onboot: true
-    user: changeme
-    ssh_keys: changeme
-    network:
-      cidr: '192.168.1.100/24'
-      gateway: '192.168.1.1'
-    storage:
-      - disk: scsi0
+    network_devices:
+      - id: net0
+        type: virtio
+        bridge: vmbr0
+    disks:
+      - id: scsi0
         size: 50G
-        location: local-lvm
+        storage: local-lvm
         name: disk-0
+    cd_drives:
+      - id: ide0
+        iso: debian-11.4.0-amd64-netinst.iso
+        storage: local
     snapshots:
       - created

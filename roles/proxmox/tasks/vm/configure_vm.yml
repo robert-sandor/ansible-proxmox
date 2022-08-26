@@ -5,36 +5,76 @@
   register: vm_config
   changed_when: false
 
+- name: Save VM configuration as JSON
+  ansible.builtin.set_fact:
+    vm_config_json: "{{ vm_config.stdout | from_json }}"
+
 - name: Update VM configuration
   vars:
-    sshkeys: "{{ vm.ssh_keys | urlencode | replace('/', '%2f') }}"
-    netcfg: "ip={{ vm.network.cidr }},gw={{ vm.network.gateway }}"
+    onboot: "{{ vm.onboot | default(false) }}"
+    ostype: "{{ vm.ostype | default('l26') }}"
   ansible.builtin.shell: >-
     pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.vmid }}/config
     --name {{ vm.name }}
     --cores {{ vm.cpus }}
     --memory {{ vm.memory }}
-    --onboot {{ vm.onboot | default(false) }}
-    --ciuser {{ vm.user }}
-    --sshkeys {{ sshkeys }}
-    --ipconfig0 {{ netcfg }}
+    --onboot {{ onboot }}
+    --ostype {{ ostype }}
   when: >-
-    vm_config.stdout | from_json | json_query('name') != vm.name or
-    vm_config.stdout | from_json | json_query('cores') != vm.cpus or
-    vm_config.stdout | from_json | json_query('memory') != vm.memory or
-    vm_config.stdout | from_json | json_query('onboot') | bool != vm.onboot or
-    vm_config.stdout | from_json | json_query('ciuser') != vm.user or
-    vm_config.stdout | from_json | json_query('sshkeys') != sshkeys or
-    vm_config.stdout | from_json | json_query('ipconfig0') != netcfg
+    vm_config_json | json_query('name') != vm.name or
+    vm_config_json | json_query('cores') != vm.cpus or
+    vm_config_json | json_query('memory') != vm.memory or
+    vm_config_json | json_query('onboot') | bool != onboot or
+    vm_config_json | json_query('ostype') != ostype
   changed_when: true
 
-- name: Resize VM disks
-  ansible.builtin.include_tasks: storage.yml
+- name: Update VM cloud-init configuration
+  when: >-
+    vm.user is defined and
+    vm.ssh_keys is defined and
+    vm.network is defined
+  block:
+    - name: Update VM cloud-init configuration
+      vars:
+        sshkeys: "{{ vm.ssh_keys | urlencode | replace('/', '%2f') }}"
+        netcfg: "ip={{ vm.network.cidr }},gw={{ vm.network.gateway }}"
+      ansible.builtin.shell: >-
+        pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.vmid }}/config
+        --ciuser {{ vm.user }}
+        --sshkeys {{ sshkeys }}
+        --ipconfig0 {{ netcfg }}
+      when: >-
+        vm_config_json | json_query('ciuser') != vm.user or
+        vm_config_json | json_query('sshkeys') != sshkeys or
+        vm_config_json | json_query('ipconfig0') != netcfg
+      changed_when: true
+
+- name: Configure disks
+  ansible.builtin.include_tasks: disks.yml
   vars:
-    existing_vm_config: "{{ vm_config.stdout | from_json }}"
-  with_items: "{{ vm.storage }}"
+    existing_vm_config: "{{ vm_config_json }}"
+  when: vm.disks is defined
+  with_items: "{{ vm.disks }}"
   loop_control:
-    loop_var: storage
+    loop_var: disk
+
+- name: Attach ISOs
+  ansible.builtin.include_tasks: cd_drives.yml
+  vars:
+    existing_vm_config: "{{ vm_config_json }}"
+  when: vm.cd_drives is defined
+  with_items: "{{ vm.cd_drives }}"
+  loop_control:
+    loop_var: cd_drive
+
+- name: Configure network devices
+  ansible.builtin.include_tasks: network_devices.yml
+  vars:
+    existing_vm_config: "{{ vm_config_json }}"
+  when: vm.network_devices is defined
+  with_items: "{{ vm.network_devices }}"
+  loop_control:
+    loop_var: netdev
 
 - name: Configure snapshots
   ansible.builtin.include_tasks: configure_snapshots_for_vm.yml

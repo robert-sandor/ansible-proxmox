@@ -1,0 +1,35 @@
+---
+- name: Resize VM disk
+  ansible.builtin.shell: >-
+    pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.vmid }}/resize
+    --disk {{ disk.id }}
+    --size {{ disk.size }}
+  changed_when: true
+  when: existing_disk_config | length > 0 and 'size=' + disk.size not in existing_disk_config
+  vars:
+    existing_disk_config: "{{ existing_vm_config | json_query(disk.id) }}"
+
+- name: Create VM disk
+  when: existing_disk_config | length == 0
+  vars:
+    existing_disk_config: "{{ existing_vm_config | json_query(disk.id) }}"
+  block:
+    - name: Validate name and location are defined
+      ansible.builtin.fail:
+        msg: "To create disk for VM {{ vm.vmid }}, 'name' and 'storage' vars are required on the disk config."
+      when: disk.storage is not defined or disk.name is not defined
+
+    - name: Create disk for VM
+      ansible.builtin.shell: >-
+        pvesh create /nodes/{{ ansible_facts.hostname }}/storage/{{ disk.storage }}/content
+        --vmid {{ vm.vmid }}
+        --filename vm-{{ vm.vmid }}-{{ disk.name }}
+        --size {{ disk.size }}
+      changed_when: true
+
+    - name: Add disk to VM
+      ansible.builtin.shell: >-
+        pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.vmid }}/config
+        --{{ disk.id }} {{ disk.storage }}:vm-{{ vm.vmid }}-{{ disk.name }}
+        --scsihw virtio-scsi-pci
+      changed_when: true

@@ -9,4 +9,4 @@
   tags: storage
 
 - ansible.builtin.import_tasks: vm/main.yml
-  tags: vm_config
+  tags: vm

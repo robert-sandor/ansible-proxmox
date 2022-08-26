@@ -1,0 +1,16 @@
+---
+- name: Attach ISO to VM
+  when: existing_cd_drive_config | length == 0
+  vars:
+    existing_cd_drive_config: "{{ existing_vm_config | json_query(cd_drive.id) }}"
+  block:
+    - name: Validate name and location are defined
+      ansible.builtin.fail:
+        msg: "To attach an ISO to VM {{ vm.vmid }}, 'iso' and 'storage' vars are required on the cd_drive config."
+      when: cd_drive.storage is not defined or cd_drive.iso is not defined
+
+    - name: Attach the ISO to VM
+      ansible.builtin.shell: >-
+        pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.vmid }}/config
+        --{{ cd_drive.id }} {{ cd_drive.storage }}:iso/{{ cd_drive.iso }},media=cdrom
+      changed_when: true
