@@ -1,17 +1,14 @@
 ---
-- name: Get existing VMs
-  ansible.builtin.shell: pvesh get /nodes/{{ ansible_facts.hostname }}/qemu --output-format json
-  register: existing_vms
-  changed_when: false
-  failed_when: >
-    template.vmid in existing_vms.stdout | from_json | json_query('[].vmid') and
-    existing_vms.stdout | from_json | json_query(query) != [1]
+- name: Validate VM ID is not already in use
+  ansible.builtin.fail:
+    msg: "VM ID {{ template.vmid }} is already in use by a VM that is not a template."
+  when: template.vmid in existing_vms | json_query('[].vmid') and existing_vms | json_query(query) != [1]
   vars:
     query: "[?vmid == `{{ template.vmid }}`].template"
 
-- name: Create new template
-  when: >
-    template.vmid not in existing_vms.stdout | from_json | json_query('[].vmid')
+- name: Create template if not exists
+  when: >-
+    template.vmid not in existing_vms | json_query('[].vmid')
   block:
     - name: Create a new VM
       ansible.builtin.shell: >

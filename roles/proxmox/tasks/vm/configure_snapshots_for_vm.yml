@@ -1,0 +1,33 @@
+---
+- name: Validate snapshot names
+  ansible.builtin.fail:
+    msg: "Snapshot name 'current' is reserved, and can not be used."
+  when: "'current' in snapshots"
+
+- name: Get existing snapshots
+  ansible.builtin.shell: >-
+    pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.vmid }}/snapshot --output-format json
+  changed_when: false
+  register: existing_snapshots
+
+- name: Update snapshots
+  vars:
+    existing_snapshot_names: >-
+      {{ existing_snapshots.stdout | from_json | json_query('[].name') | difference(['current']) }}
+  block:
+    - name: Create snapshot if not present
+      ansible.builtin.shell: >-
+        pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vmid }}/snapshot
+        --snapname {{ snapshot_name }}
+      changed_when: true
+      with_items: "{{ snapshots | difference(existing_snapshot_names) }}"
+      loop_control:
+        loop_var: snapshot_name
+
+    - name: Delete snapshot if not in config
+      ansible.builtin.shell: >-
+        pvesh delete /nodes/{{ ansible_facts.hostname }}/qemu/{{ vmid }}/snapshot/{{ snapshot_name }}
+      changed_when: true
+      with_items: "{{ existing_snapshot_names | difference(snapshots) }}"
+      loop_control:
+        loop_var: snapshot_name

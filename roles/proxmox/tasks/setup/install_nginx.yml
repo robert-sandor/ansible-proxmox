@@ -15,7 +15,7 @@
     dest: /etc/nginx/conf.d/proxmox.conf
     backup: true
     mode: 0644
-  notify: restart nginx
+  notify: Restart nginx
 
 - name: Ensure /etc/systemd/system/nginx.service.d exists
   ansible.builtin.file:

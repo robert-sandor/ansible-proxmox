@@ -4,4 +4,4 @@
     pkg: "*"
     state: latest
     update_cache: true
-  notify: reboot
+  notify: Reboot

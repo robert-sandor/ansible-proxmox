@@ -1,0 +1,7 @@
+---
+- ansible.builtin.import_tasks: switch_to_community_updates_repo.yml
+- ansible.builtin.import_tasks: update.yml
+- ansible.builtin.import_tasks: disable_subscription_prompt.yml
+- ansible.builtin.import_tasks: install_pve_dark_theme.yml
+- ansible.builtin.import_tasks: acme/enable_acme.yml
+- ansible.builtin.import_tasks: install_nginx.yml

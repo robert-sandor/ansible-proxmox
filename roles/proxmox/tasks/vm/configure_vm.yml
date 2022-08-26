@@ -1,6 +1,7 @@
 ---
 - name: Get existing VM configuration
-  ansible.builtin.shell: pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.vmid }}/config --output-format json
+  ansible.builtin.shell: >-
+    pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.vmid }}/config --output-format json
   register: vm_config
   changed_when: false
 
@@ -28,12 +29,16 @@
   changed_when: true
 
 - name: Resize VM disks
-  ansible.builtin.shell: >-
-    pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.vmid }}/resize
-    --disk {{ storage.disk }}
-    --size {{ storage.size }}
-  changed_when: true
-  when: "'size=' + storage.size not in vm_config.stdout | from_json | json_query(storage.disk)"
+  ansible.builtin.include_tasks: storage.yml
+  vars:
+    existing_vm_config: "{{ vm_config.stdout | from_json }}"
   with_items: "{{ vm.storage }}"
   loop_control:
     loop_var: storage
+
+- name: Configure snapshots
+  ansible.builtin.include_tasks: configure_snapshots_for_vm.yml
+  vars:
+    vmid: "{{ vm.vmid }}"
+    snapshots: "{{ vm.snapshots }}"
+  when: vm.snapshots is defined
