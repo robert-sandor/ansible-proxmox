@@ -1,0 +1,6 @@
+---
+- ansible.builtin.include_tasks: manage_isos.yml
+  when: storage.isos is defined
+  with_items: "{{ storages }}"
+  loop_control:
+    loop_var: storage

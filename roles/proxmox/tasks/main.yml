@@ -5,5 +5,8 @@
 - ansible.builtin.import_tasks: templates/main.yml
   tags: templates
 
+- ansible.builtin.import_tasks: storage/main.yml
+  tags: storage
+
 - ansible.builtin.import_tasks: vm/main.yml
   tags: vm_config

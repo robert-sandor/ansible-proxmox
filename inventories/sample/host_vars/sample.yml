@@ -8,6 +8,11 @@ acme_plugin_type: dns
 acme_plugin_cloudflare_email: changeme@email.com
 acme_plugin_cloudflare_token: changeme
 
+storages:
+  - name: local
+    isos:
+      - https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-11.4.0-amd64-netinst.iso
+
 templates:
   - vmid: 9000
     name: ubuntu-2204
