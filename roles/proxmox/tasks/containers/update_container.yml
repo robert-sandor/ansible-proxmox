@@ -1,0 +1,67 @@
+---
+- name: Get existing container config
+  ansible.builtin.shell: >-
+    pvesh get /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/config
+    --output-format json
+  changed_when: false
+  register: container_config
+
+- name: Update container config
+  vars:
+    ct_config: "{{ container_config.stdout | from_json }}"
+
+    hostname: "{{ '--hostname ' + container.hostname if container.hostname != ct_config.hostname else '' }}"
+    cores: "{{ container.cores | default(1) }}"
+    cores_cfg: "{{ '--cores ' + cores if cores | int != ct_config.cores else '' }}"
+    memory: "{{ container.memory | default(512) }}"
+    memory_cfg: "{{ '--memory ' + memory if memory | int != ct_config.memory else '' }}"
+    swap: "{{ container.swap | default(512) }}"
+    swap_cfg: "{{ '--swap ' + swap if swap != ct_config.swap else '' }}"
+    nesting: "nesting={{ container.nesting | default(true) | ternary(1, 0) }}"
+    features: "{{ '--features ' + nesting if nesting != ct_config.features else '' }}"
+    onboot: "{{ container.onboot | default(false) | ternary(1, 0) }}"
+    onboot_cfg: "{{ '--onboot ' + onboot | string if onboot | int != ct_config.onboot else '' }}"
+    timezone: "{{ container.timezone | default('host') }}"
+    timezone_cfg: "{{ '--timezone ' + timezone if timezone != ct_config.timezone else '' }}"
+    nameserver: "{{ container.nameserver | default('') }}"
+    nameserver_cfg: "{{ '--nameserver ' + nameserver if nameserver != ct_config.nameserver | default('') else '' }}"
+    sd: "{{ container.searchdomain | default('') }}"
+    sd_cfg: "{{ '--searchdomain ' + sd if sd != ct_config.searchdomain | default('') else '' }}"
+    ct_tags: "{{ container.tags | default([]) | join(',') }}"
+    ct_tags_cfg: "{{ '--tags ' + ct_tags if ct_tags != ct_config.tags | default('') else '' }}"
+
+    updated_cfg: >-
+      {{ hostname }}
+      {{ cores_cfg }}
+      {{ memory_cfg }}
+      {{ features }}
+      {{ onboot_cfg }}
+      {{ timezone_cfg }}
+      {{ nameserver_cfg }}
+      {{ sd_cfg }}
+      {{ ct_tags_cfg }}
+
+  ansible.builtin.shell: >-
+    pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/config {{ updated_cfg | trim }}
+  when: updated_cfg | trim != ''
+  changed_when: true
+
+- name: Update container network device
+  vars: 
+    ct_config: "{{ container_config.stdout | from_json }}"
+    net_config: "{{ ct_config[netdev.id] | split(',') | map('split', '=') | items2dict(key_name=0, value_name=1) }}"
+
+    updated_net_config: "name={{ netdev.name }},bridge={{ netdev.bridge }},\
+      firewall={{ netdev.firewall | default(true) | ternary(1, 0) }}\
+      {{ ',gw=' + netdev.gateway if netdev.gateway is defined else '' }}\
+      {{ ',hwaddr=' + netdev.mac | default(net_config.hwaddr) }}\
+      {{ ',ip=' + netdev.ip if netdev.ip is defined else '' }}\
+      {{ ',tag=' + netdev.vlan_tag | string if netdev.vlan_tag is defined else '' }}\
+      ,type=veth"
+  ansible.builtin.shell: >-
+    pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/config
+    --{{ netdev.id }} {{ updated_net_config }}
+  when: updated_net_config != ct_config[netdev.id]
+  with_items: "{{ container.network_devices }}"
+  loop_control:
+    loop_var: netdev

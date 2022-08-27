@@ -4,8 +4,9 @@
     netcfg: "{% for netdev in container.network_devices %}
       --{{ netdev.id }} name={{ netdev.name }},\
       bridge={{ netdev.bridge }},\
-      firewall={{ netdev.firewall | default(false) | ternary(1, 0) }},\
+      firewall={{ netdev.firewall | default(true) | ternary(1, 0) }},\
       ip={{ netdev.ip }}\
+      gw={{ netdev.gateway }}\
       {{ ',tag=' + netdev.vlan_tag | string if netdev.vlan_tag is defined else '' }}
       {% endfor %}"
     container_tags: "{{ '--tags ' + container.tags | join(',') if container.tags is defined else '' }}"
