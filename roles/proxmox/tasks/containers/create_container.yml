@@ -5,8 +5,12 @@
       --{{ netdev.id }} name={{ netdev.name }},\
       bridge={{ netdev.bridge }},\
       firewall={{ netdev.firewall | default(false) | ternary(1, 0) }},\
-      ip={{ netdev.ip }}
+      ip={{ netdev.ip }}\
+      {{ ',tag=' + netdev.vlan_tag | string if netdev.vlan_tag is defined else '' }}
       {% endfor %}"
+    container_tags: "{{ '--tags ' + container.tags | join(',') if container.tags is defined else '' }}"
+    nameserver: "{{ '--nameserver ' + container.nameserver if container.nameserver is defined else '' }}"
+    searchdomain: "{{ '--searchdomain ' + container.searchdomain if container.searchdomain is defined else '' }}"
   ansible.builtin.shell: >-
     pvesh create /nodes/{{ ansible_facts.hostname }}/lxc
     --vmid {{ container.vmid }}
@@ -20,5 +24,11 @@
     --rootfs {{ container.rootfs.storage }}:{{ container.rootfs.size }}
     --features nesting={{ container.nesting | default(true) | ternary(1, 0) }}
     --onboot {{ container.onboot | default(false) | ternary(1, 0) }}
+    --unprivileged {{ container.unprivileged | default(true) | ternary(1, 0) }}
+    --timezone {{ container.timezone | default('host') }}
+    --start {{ container.start | default(false) | ternary(1, 0) }}
+    {{ nameserver }}
+    {{ searchdomain }}
+    {{ container_tags }}
     {{ netcfg }}
   changed_when: true

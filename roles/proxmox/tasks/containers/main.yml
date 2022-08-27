@@ -10,8 +10,3 @@
   with_items: "{{ containers }}"
   loop_control:
     loop_var: container
-
-- ansible.builtin.include_tasks: configure_container.yml
-  with_items: "{{ containers }}"
-  loop_control:
-    loop_var: container
