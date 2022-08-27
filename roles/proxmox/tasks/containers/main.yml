@@ -1,0 +1,17 @@
+---
+- name: Get existing containers
+  ansible.builtin.shell: pvesh get /nodes/{{ ansible_facts.hostname }}/lxc --output-format json
+  register: existing_containers
+  changed_when: false
+
+- name: Create container if missing
+  ansible.builtin.include_tasks: create_container.yml
+  when: container.vmid | string not in existing_containers.stdout | from_json | json_query('[].vmid')
+  with_items: "{{ containers }}"
+  loop_control:
+    loop_var: container
+
+- ansible.builtin.include_tasks: configure_container.yml
+  with_items: "{{ containers }}"
+  loop_control:
+    loop_var: container

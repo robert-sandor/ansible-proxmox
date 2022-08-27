@@ -1,0 +1,24 @@
+---
+- name: Create new container
+  vars:
+    netcfg: "{% for netdev in container.network_devices %}
+      --{{ netdev.id }} name={{ netdev.name }},\
+      bridge={{ netdev.bridge }},\
+      firewall={{ netdev.firewall | default(false) | ternary(1, 0) }},\
+      ip={{ netdev.ip }}
+      {% endfor %}"
+  ansible.builtin.shell: >-
+    pvesh create /nodes/{{ ansible_facts.hostname }}/lxc
+    --vmid {{ container.vmid }}
+    --ostemplate {{ container.template.storage }}:vztmpl/{{ container.template.name }}
+    --hostname {{ container.hostname }}
+    --password {{ container.password }}
+    --ssh-public-keys "{{ container.ssh_keys }}"
+    --cores {{ container.cores | default(1) }}
+    --memory {{ container.memory | default(512) }}
+    --swap {{ container.swap | default(512) }}
+    --rootfs {{ container.rootfs.storage }}:{{ container.rootfs.size }}
+    --features nesting={{ container.nesting | default(true) | ternary(1, 0) }}
+    --onboot {{ container.onboot | default(false) | ternary(1, 0) }}
+    {{ netcfg }}
+  changed_when: true
