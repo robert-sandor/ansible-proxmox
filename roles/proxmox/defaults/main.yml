@@ -1,0 +1,13 @@
+---
+container_defaults:
+  cores: 1
+  memory: 512
+  swap: 512
+  nesting: true
+  onboot: false
+  unprivileged: true
+  timezone: host
+  start: false
+  netdev_firewall: true
+  nameserver: ''
+  searchdomain: ''

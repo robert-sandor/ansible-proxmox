@@ -4,7 +4,7 @@
     netcfg: "{% for netdev in container.network_devices %}
       --{{ netdev.id }} name={{ netdev.name }},\
       bridge={{ netdev.bridge }},\
-      firewall={{ netdev.firewall | default(true) | ternary(1, 0) }},\
+      firewall={{ netdev.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }},\
       ip={{ netdev.ip }}\
       gw={{ netdev.gateway }}\
       {{ ',tag=' + netdev.vlan_tag | string if netdev.vlan_tag is defined else '' }}
@@ -19,15 +19,15 @@
     --hostname {{ container.hostname }}
     --password {{ container.password }}
     --ssh-public-keys "{{ container.ssh_keys }}"
-    --cores {{ container.cores | default(1) }}
-    --memory {{ container.memory | default(512) }}
-    --swap {{ container.swap | default(512) }}
+    --cores {{ container.cores | default(container_defaults.cores) }}
+    --memory {{ container.memory | default(container_defaults.memory) }}
+    --swap {{ container.swap | default(container_defaults.swap) }}
     --rootfs {{ container.rootfs.storage }}:{{ container.rootfs.size }}
-    --features nesting={{ container.nesting | default(true) | ternary(1, 0) }}
-    --onboot {{ container.onboot | default(false) | ternary(1, 0) }}
-    --unprivileged {{ container.unprivileged | default(true) | ternary(1, 0) }}
-    --timezone {{ container.timezone | default('host') }}
-    --start {{ container.start | default(false) | ternary(1, 0) }}
+    --features nesting={{ container.nesting | default(container_defaults.nesting) | ternary(1, 0) }}
+    --onboot {{ container.onboot | default(container_defaults.onboot) | ternary(1, 0) }}
+    --unprivileged {{ container.unprivileged | default(container_defaults.unprivileged) | ternary(1, 0) }}
+    --timezone {{ container.timezone | default(container_defaults.timezone) }}
+    --start {{ container.start | default(container_defaults.start) | ternary(1, 0) }}
     {{ nameserver }}
     {{ searchdomain }}
     {{ container_tags }}
