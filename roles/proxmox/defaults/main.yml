@@ -1,4 +1,8 @@
 ---
+managed_by_ansible_tag: managed_by_ansible
+
+container_remove_unreferenced: true
+
 container_defaults:
   cores: 1
   memory: 512

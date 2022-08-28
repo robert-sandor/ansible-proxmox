@@ -28,7 +28,7 @@
     ns_cfg: "{{ '--nameserver ' + ns if ns != '' and ns != ct_config.nameserver | default('') else '' }}"
     sd: "{{ container.searchdomain | default(container_defaults.searchdomain) }}"
     sd_cfg: "{{ '--searchdomain ' + sd if sd != '' and sd != ct_config.searchdomain | default('') else '' }}"
-    ct_tags: "{{ container.tags | default([]) | join(',') }}"
+    ct_tags: "{{ (container.tags | default([]) + [managed_by_ansible_tag]) | join(',') }}"
     ct_tags_cfg: "{{ '--tags ' + ct_tags if ct_tags != '' and ct_tags != ct_config.tags | default('') else '' }}"
 
     to_delete: "{{ 'nameserver,' if ns == '' and ct_config.nameserver is defined else '' }}\

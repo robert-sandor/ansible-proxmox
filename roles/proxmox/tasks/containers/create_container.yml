@@ -9,7 +9,7 @@
       gw={{ netdev.gateway }}\
       {{ ',tag=' + netdev.vlan_tag | string if netdev.vlan_tag is defined else '' }}
       {% endfor %}"
-    container_tags: "{{ '--tags ' + container.tags | join(',') if container.tags is defined else '' }}"
+    container_tags: "{{ '--tags ' + (container.tags | default([]) + [managed_by_ansible_tag]) | join(',') }}"
     nameserver: "{{ '--nameserver ' + container.nameserver if container.nameserver is defined else '' }}"
     searchdomain: "{{ '--searchdomain ' + container.searchdomain if container.searchdomain is defined else '' }}"
   ansible.builtin.shell: >-

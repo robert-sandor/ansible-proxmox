@@ -17,3 +17,10 @@
   with_items: "{{ containers }}"
   loop_control:
     loop_var: container
+
+- name: Remove unreferenced containers
+  ansible.builtin.include_tasks: remove.yml
+  when: container_remove_unreferenced and container_id | int not in containers | json_query('[].vmid')
+  with_items: "{{ existing_containers.stdout | from_json | json_query('[].vmid') }}"
+  loop_control:
+    loop_var: container_id
