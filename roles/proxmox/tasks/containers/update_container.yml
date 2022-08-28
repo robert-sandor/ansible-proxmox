@@ -31,10 +31,10 @@
     ct_tags: "{{ container.tags | default([]) | join(',') }}"
     ct_tags_cfg: "{{ '--tags ' + ct_tags if ct_tags != '' and ct_tags != ct_config.tags | default('') else '' }}"
 
-    delete_cfg: "--delete \
-      {{ 'nameserver,' if ns == '' and ct_config.nameserver is defined else '' }}\
+    to_delete: "{{ 'nameserver,' if ns == '' and ct_config.nameserver is defined else '' }}\
       {{ 'searchdomain,' if sd == '' and ct_config.searchdomain is defined else '' }}\
       {{ 'tags' if ct_tags == '' and ct_config.tags is defined else '' }}"
+    delete_cfg: "{{ '--delete ' + to_delete if to_delete != '' else '' }}"
 
     updated_cfg: >-
       {{ hostname }}
@@ -72,3 +72,13 @@
   with_items: "{{ container.network_devices }}"
   loop_control:
     loop_var: netdev
+
+- name: Resize root filesystem
+  vars:
+    ct_config: "{{ container_config.stdout | from_json }}"
+    current_size: "{{ ct_config.rootfs | regex_search('size=([0-9]+)G', '\\1') }}"
+  ansible.builtin.shell: >-
+    pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/resize
+    --disk rootfs
+    --size {{ container.rootfs.size_in_gb }}G
+  when: current_size[0] | int < container.rootfs.size_in_gb

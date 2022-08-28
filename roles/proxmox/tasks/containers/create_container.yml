@@ -5,7 +5,7 @@
       --{{ netdev.id }} name={{ netdev.name }},\
       bridge={{ netdev.bridge }},\
       firewall={{ netdev.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }},\
-      ip={{ netdev.ip }}\
+      ip={{ netdev.ip }},\
       gw={{ netdev.gateway }}\
       {{ ',tag=' + netdev.vlan_tag | string if netdev.vlan_tag is defined else '' }}
       {% endfor %}"
@@ -22,7 +22,7 @@
     --cores {{ container.cores | default(container_defaults.cores) }}
     --memory {{ container.memory | default(container_defaults.memory) }}
     --swap {{ container.swap | default(container_defaults.swap) }}
-    --rootfs {{ container.rootfs.storage }}:{{ container.rootfs.size }}
+    --rootfs {{ container.rootfs.storage }}:{{ container.rootfs.size_in_gb }}
     --features nesting={{ container.nesting | default(container_defaults.nesting) | ternary(1, 0) }}
     --onboot {{ container.onboot | default(container_defaults.onboot) | ternary(1, 0) }}
     --unprivileged {{ container.unprivileged | default(container_defaults.unprivileged) | ternary(1, 0) }}
