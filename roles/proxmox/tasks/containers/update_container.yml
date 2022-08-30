@@ -6,79 +6,79 @@
   changed_when: false
   register: container_config
 
-- name: Update container config
+- name: Update container
   vars:
     ct_config: "{{ container_config.stdout | from_json }}"
+  block:
+    - name: Update container config
+      vars:
+        hostname: "{{ '--hostname ' + container.hostname if container.hostname != ct_config.hostname else '' }}"
+        cores: "{{ container.cores | default(container_defaults.cores) }}"
+        cores_cfg: "{{ '--cores ' + cores if cores | int != ct_config.cores else '' }}"
+        memory: "{{ container.memory | default(container_defaults.memory) }}"
+        memory_cfg: "{{ '--memory ' + memory if memory | int != ct_config.memory else '' }}"
+        swap: "{{ container.swap | default(container_defaults.swap) }}"
+        swap_cfg: "{{ '--swap ' + swap if swap != ct_config.swap else '' }}"
+        nesting: "nesting={{ container.nesting | default(container_defaults.nesting) | ternary(1, 0) }}"
+        features: "{{ '--features ' + nesting if nesting != ct_config.features else '' }}"
+        onboot: "{{ container.onboot | default(container_defaults.onboot) | ternary(1, 0) }}"
+        onboot_cfg: "{{ '--onboot ' + onboot | string if onboot | int != ct_config.onboot else '' }}"
+        timezone: "{{ container.timezone | default(container_defaults.timezone) }}"
+        timezone_cfg: "{{ '--timezone ' + timezone if timezone != ct_config.timezone else '' }}"
 
-    hostname: "{{ '--hostname ' + container.hostname if container.hostname != ct_config.hostname else '' }}"
-    cores: "{{ container.cores | default(container_defaults.cores) }}"
-    cores_cfg: "{{ '--cores ' + cores if cores | int != ct_config.cores else '' }}"
-    memory: "{{ container.memory | default(container_defaults.memory) }}"
-    memory_cfg: "{{ '--memory ' + memory if memory | int != ct_config.memory else '' }}"
-    swap: "{{ container.swap | default(container_defaults.swap) }}"
-    swap_cfg: "{{ '--swap ' + swap if swap != ct_config.swap else '' }}"
-    nesting: "nesting={{ container.nesting | default(container_defaults.nesting) | ternary(1, 0) }}"
-    features: "{{ '--features ' + nesting if nesting != ct_config.features else '' }}"
-    onboot: "{{ container.onboot | default(container_defaults.onboot) | ternary(1, 0) }}"
-    onboot_cfg: "{{ '--onboot ' + onboot | string if onboot | int != ct_config.onboot else '' }}"
-    timezone: "{{ container.timezone | default(container_defaults.timezone) }}"
-    timezone_cfg: "{{ '--timezone ' + timezone if timezone != ct_config.timezone else '' }}"
+        ns: "{{ container.nameserver | default(container_defaults.nameserver) }}"
+        ns_cfg: "{{ '--nameserver ' + ns if ns != '' and ns != ct_config.nameserver | default('') else '' }}"
+        sd: "{{ container.searchdomain | default(container_defaults.searchdomain) }}"
+        sd_cfg: "{{ '--searchdomain ' + sd if sd != '' and sd != ct_config.searchdomain | default('') else '' }}"
+        ct_tags: "{{ (container.tags | default([]) + [managed_by_ansible_tag]) | join(',') }}"
+        ct_tags_cfg: "{{ '--tags ' + ct_tags if ct_tags != '' and ct_tags != ct_config.tags | default('') else '' }}"
 
-    ns: "{{ container.nameserver | default(container_defaults.nameserver) }}"
-    ns_cfg: "{{ '--nameserver ' + ns if ns != '' and ns != ct_config.nameserver | default('') else '' }}"
-    sd: "{{ container.searchdomain | default(container_defaults.searchdomain) }}"
-    sd_cfg: "{{ '--searchdomain ' + sd if sd != '' and sd != ct_config.searchdomain | default('') else '' }}"
-    ct_tags: "{{ (container.tags | default([]) + [managed_by_ansible_tag]) | join(',') }}"
-    ct_tags_cfg: "{{ '--tags ' + ct_tags if ct_tags != '' and ct_tags != ct_config.tags | default('') else '' }}"
+        to_delete: "{{ 'nameserver,' if ns == '' and ct_config.nameserver is defined else '' }}\
+          {{ 'searchdomain,' if sd == '' and ct_config.searchdomain is defined else '' }}\
+          {{ 'tags' if ct_tags == '' and ct_config.tags is defined else '' }}"
+        delete_cfg: "{{ '--delete ' + to_delete if to_delete != '' else '' }}"
 
-    to_delete: "{{ 'nameserver,' if ns == '' and ct_config.nameserver is defined else '' }}\
-      {{ 'searchdomain,' if sd == '' and ct_config.searchdomain is defined else '' }}\
-      {{ 'tags' if ct_tags == '' and ct_config.tags is defined else '' }}"
-    delete_cfg: "{{ '--delete ' + to_delete if to_delete != '' else '' }}"
+        updated_cfg: >-
+          {{ hostname }}
+          {{ cores_cfg }}
+          {{ memory_cfg }}
+          {{ features }}
+          {{ onboot_cfg }}
+          {{ timezone_cfg }}
+          {{ ns_cfg }}
+          {{ sd_cfg }}
+          {{ ct_tags_cfg }}
+          {{ delete_cfg }}
 
-    updated_cfg: >-
-      {{ hostname }}
-      {{ cores_cfg }}
-      {{ memory_cfg }}
-      {{ features }}
-      {{ onboot_cfg }}
-      {{ timezone_cfg }}
-      {{ ns_cfg }}
-      {{ sd_cfg }}
-      {{ ct_tags_cfg }}
-      {{ delete_cfg }}
+      ansible.builtin.shell: >-
+        pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/config {{ updated_cfg | trim }}
+      when: updated_cfg | trim != ''
+      changed_when: true
 
-  ansible.builtin.shell: >-
-    pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/config {{ updated_cfg | trim }}
-  when: updated_cfg | trim != ''
-  changed_when: true
+    - name: Update container network device
+      vars:
+        net_config: "{{ ct_config[netdev.id] | split(',') | map('split', '=') | items2dict(key_name=0, value_name=1) }}"
 
-- name: Update container network device
-  vars:
-    ct_config: "{{ container_config.stdout | from_json }}"
-    net_config: "{{ ct_config[netdev.id] | split(',') | map('split', '=') | items2dict(key_name=0, value_name=1) }}"
+        updated_net_config: "name={{ netdev.name }},bridge={{ netdev.bridge }},\
+          firewall={{ netdev.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }}\
+          {{ ',gw=' + netdev.gateway if netdev.gateway is defined else '' }}\
+          {{ ',hwaddr=' + netdev.mac | default(net_config.hwaddr) }}\
+          {{ ',ip=' + netdev.ip if netdev.ip is defined else '' }}\
+          {{ ',tag=' + netdev.vlan_tag | string if netdev.vlan_tag is defined else '' }}\
+          ,type=veth"
+      ansible.builtin.shell: >-
+        pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/config
+        --{{ netdev.id }} {{ updated_net_config }}
+      when: updated_net_config != ct_config[netdev.id]
+      with_items: "{{ container.network_devices }}"
+      loop_control:
+        loop_var: netdev
 
-    updated_net_config: "name={{ netdev.name }},bridge={{ netdev.bridge }},\
-      firewall={{ netdev.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }}\
-      {{ ',gw=' + netdev.gateway if netdev.gateway is defined else '' }}\
-      {{ ',hwaddr=' + netdev.mac | default(net_config.hwaddr) }}\
-      {{ ',ip=' + netdev.ip if netdev.ip is defined else '' }}\
-      {{ ',tag=' + netdev.vlan_tag | string if netdev.vlan_tag is defined else '' }}\
-      ,type=veth"
-  ansible.builtin.shell: >-
-    pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/config
-    --{{ netdev.id }} {{ updated_net_config }}
-  when: updated_net_config != ct_config[netdev.id]
-  with_items: "{{ container.network_devices }}"
-  loop_control:
-    loop_var: netdev
-
-- name: Resize root filesystem
-  vars:
-    ct_config: "{{ container_config.stdout | from_json }}"
-    current_size: "{{ ct_config.rootfs | regex_search('size=([0-9]+)G', '\\1') }}"
-  ansible.builtin.shell: >-
-    pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/resize
-    --disk rootfs
-    --size {{ container.rootfs.size_in_gb }}G
-  when: current_size[0] | int < container.rootfs.size_in_gb
+    - name: Resize root filesystem
+      vars:
+        current_size: "{{ ct_config.rootfs | regex_search('size=([0-9]+)G', '\\1') }}"
+      ansible.builtin.shell: >-
+        pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/resize
+        --disk rootfs
+        --size {{ container.rootfs.size }}G
+      when: current_size[0] | int < container.rootfs.size

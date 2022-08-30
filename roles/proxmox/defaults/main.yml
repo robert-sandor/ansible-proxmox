@@ -1,6 +1,23 @@
 ---
 managed_by_ansible_tag: managed_by_ansible
 
+vm_remove_unreferenced: true
+
+vm_defaults:
+  bios: ovmf
+  cores: 1
+  cpu: host
+  memory: 512
+  onboot: false
+  machine: q35
+  ostype: l26
+  scsihw: virtio-scsi-pci
+  sockets: 1
+  vga: qxl
+  netdev_firewall: true
+  netdev_type: virtio
+  netdev_bridge: vmbr0
+
 container_remove_unreferenced: true
 
 container_defaults:

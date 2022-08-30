@@ -1,0 +1,22 @@
+---
+- name: vm-{{ vm.key }}> Resize VM disk
+  vars:
+    current_size: "{{ vm_config[disk.key] | default('') | \
+      regex_search('size=([0-9]+)G', '\\1') }}"
+  ansible.builtin.shell: >-
+    pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/resize
+    --disk {{ disk.key }}
+    --size {{ disk.value.size }}G
+  when: vm_config[disk.key] is defined and current_size[0] | int < disk.value.size
+  with_items: "{{ vm.value.disks | dict2items }}"
+  loop_control:
+    loop_var: disk
+
+- name: vm-{{ vm.key }}> Create VM disk
+  ansible.builtin.shell: >-
+    pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
+    --{{ disk.key }} {{ disk.value.storage | default(vm.value.storage) }}:{{ disk.value.size }}
+  when: vm_config[disk.key] is not defined
+  with_items: "{{ vm.value.disks | dict2items }}"
+  loop_control:
+    loop_var: disk

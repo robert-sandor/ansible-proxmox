@@ -1,0 +1,21 @@
+---
+- name: vm-{{ vm.key }}> Attach ISO to VM
+  ansible.builtin.shell: >-
+    pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
+    --{{ cd_drive.key }} {{ cd_drive.value.storage }}:iso/{{ cd_drive.value.iso }},media=cdrom
+  when: vm_config[cd_drive.key] is not defined
+  with_items: "{{ vm.value.cd_drives | default({}) | dict2items }}"
+  loop_control:
+    loop_var: cd_drive
+
+- name: vm-{{ vm.key }}> Remove ISO from VM
+  vars:
+    query: "[?starts_with(key, 'ide')].key"
+    current_ide_drives: "{{ vm_config | dict2items | json_query(query) }}"
+    ide_drives_to_remove: "{{ current_ide_drives | \
+      difference(vm.value.cd_drives.keys() if vm.value.cd_drives is defined else []) | \
+      join(',') }}"
+  ansible.builtin.shell: >-
+    pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
+    --delete {{ ide_drives_to_remove }}
+  when: ide_drives_to_remove != ''

@@ -1,0 +1,31 @@
+---
+- name: vm-{{ vm.key }}>   Update network device
+  vars:
+    existing_net_config: "{{ vm_config[netdev.key] | default('') }}"
+    net_config: "{{ '' if existing_net_config == '' else \
+      existing_net_config | split(',') | map('split', '=') | items2dict(key_name=0, value_name=1) }}"
+    type: "{{ netdev.value.type | default(vm_defaults.netdev_type) }}"
+    mac: "{{ netdev.value.mac | default(net_config[type] | default('')) }}"
+    type_and_mac: "{{ type }}{{ '=' + mac if mac != '' else '' }}"
+    updated_net_config: "{{ type_and_mac }},bridge={{ netdev.value.bridge | default(vm_defaults.netdev_bridge) }},\
+      firewall={{ netdev.value.firewall | default(vm_defaults.netdev_firewall) | ternary(1, 0) }}\
+      {{ ',tag=' + netdev.value.vlan_tag | string if netdev.value.vlan_tag is defined else '' }}"
+  ansible.builtin.shell: >-
+    pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
+    --{{ netdev.key }} {{ updated_net_config }}
+  when: updated_net_config != existing_net_config
+  with_items: "{{ vm.value.network_devices | default({}) | dict2items }}"
+  loop_control:
+    loop_var: netdev
+
+- name: vm-{{ vm.key }}> Remove undeclared network interfaces
+  vars:
+    query: "[?starts_with(key, 'net')].key"
+    current_network_devs: "{{ vm_config | dict2items | json_query(query) }}"
+    network_devs_to_remove: "{{ current_network_devs | \
+      difference(vm.value.network_devices.keys()) | \
+      join(',') }}"
+  ansible.builtin.shell: >-
+    pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
+    --delete {{ network_devs_to_remove }}
+  when: vm_remove_unreferenced and network_devs_to_remove != ''

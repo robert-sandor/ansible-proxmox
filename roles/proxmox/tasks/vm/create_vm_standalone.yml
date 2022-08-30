@@ -1,0 +1,38 @@
+---
+- name: Create standalone VM
+  vars:
+    cd_drives: "{% for drive in vm.value.cd_drives | default({}) | dict2items %}\
+      --{{ drive.key }} {{ drive.value.storage | default(vm.value.storage) }}:iso/{{ drive.value.iso }},media=cdrom \
+      {% endfor %}"
+    disks: "{% for disk in vm.value.disks | default({}) | dict2items %}\
+      --{{ disk.key }} {{ disk.value.storage | default(vm.value.storage) }}:{{ disk.value.size }} \
+      {% endfor %}"
+    network_devices: "{% for netdev in vm.value.network_devices | dict2items %}
+      --{{ netdev.key }} {{ netdev.value.type | default(vm_defaults.netdev_type) }}\
+      {{ '=' + netdev.value.mac if netdev.value.mac is defined else '' }},\
+      bridge={{ netdev.value.bridge | default(vm_defaults.netdev_bridge) }},\
+      firewall={{ netdev.value.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }},\
+      {{ ',tag=' + netdev.value.vlan_tag | string if netdev.value.vlan_tag is defined else '' }}
+      {% endfor %}"
+  ansible.builtin.shell: >-
+    pvesh create /nodes/{{ ansible_facts.hostname }}/qemu
+    --vmid {{ vm.key }}
+    --name {{ vm.value.name }}
+    --bios {{ vm.value.bios | default(vm_defaults.bios) }}
+    --cores {{ vm.value.cores | default(vm_defaults.cores) }}
+    --cpu {{ vm.value.cpu | default(vm_defaults.cpu) }}
+    --machine {{ vm.value.machine | default(vm_defaults.machine) }}
+    --memory {{ vm.value.memory | default(vm_defaults.memory) }}
+    --onboot {{ vm.value.onboot | default(vm_defaults.onboot) | ternary(1, 0) }}
+    --ostype {{ vm.value.ostype | default(vm_defaults.ostype) }}
+    --scsihw {{ vm.value.scsihw | default(vm_defaults.scsihw) }}
+    --sockets {{ vm.value.sockets | default(vm_defaults.sockets) }}
+    --vga {{ vm.value.vga | default(vm_defaults.vga) }}
+    {{ cd_drives }}
+    {{ disks }}
+    {{ network_devices }}
+    {% if 'ovmf' in vm.value.bios | default(vm_defaults.bios) %}
+    --efidisk0 {{ vm.value.storage }}:1,efitype=4m,pre-enrolled-keys=1
+    --tpmstate0 {{ vm.value.storage }}:1,version=v2.0
+    {% endif %}
+  changed_when: true

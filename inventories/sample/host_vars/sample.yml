@@ -1,75 +1,165 @@
 ---
-domain: example.com
+domain: yavin.xyz
 
-acme_email: changeme@email.com
-acme_staging: true
+acme_email: changeme
+acme_staging: false
 acme_plugin_name: cloudflare
 acme_plugin_type: dns
-acme_plugin_cloudflare_email: changeme@email.com
+acme_plugin_cloudflare_email: changeme
 acme_plugin_cloudflare_token: changeme
 
-storages:
-  - name: local
+ssh_keys: changeme
+
+templates:
+  9000:
+    name: debian-bullseye
+    cloud_image_url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-genericcloud-amd64.qcow2
+    storage: local-lvm
+  9001:
+    name: ubuntu-2204
+    cloud_image_url: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
+    storage: local-lvm
+
+storage:
+  local:
     isos:
       - https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-11.4.0-amd64-netinst.iso
     ct_templates:
-      - ubuntu-20.04-standard_22.04-1_amd64.tar.zst
-
-templates:
-  - vmid: 9000
-    name: ubuntu-2204
-    cloud_image_url: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
-  - vmid: 9001
-    name: debian-bullseye
-    cloud_image_url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-genericcloud-amd64.qcow2
+      - ubuntu-22.04-standard_22.04-1_amd64.tar.zst
+      - debian-11-standard_11.3-1_amd64.tar.zst
+      - debian-10-turnkey-gitea_16.1-1_amd64.tar.gz
 
 vms:
-  - vmid: 200
-    template: 9001
-    name: k8s-master
-    cpus: 4
-    memory: 4096
-    onboot: true
-    user: changeme
-    ssh_keys: changeme
-    network:
-      cidr: '192.168.1.100/24'
-      gateway: '192.168.1.1'
-    storage:
-      - disk: scsi0
-        size: 50G
 
-  - vmid: 201
-    template: 9001
-    name: k8s-node
-    cpus: 4
+  100:
+    name: new-vm
+    cores: 4
     memory: 4096
-    onboot: true
-    user: changeme
-    ssh_keys: changeme
-    network:
-      cidr: '192.168.1.100/24'
-      gateway: '192.168.1.1'
-    storage:
-      - disk: scsi0
-        size: 50G
-
-  - vmid: 202
-    name: example-vm
-    cpus: 4
-    memory: 4096
+    storage: local-lvm
     network_devices:
-      - id: net0
-        type: virtio
-        bridge: vmbr0
+      net0:
     disks:
-      - id: scsi0
-        size: 50G
-        storage: local-lvm
-        name: disk-0
+      scsi0:
+        size: 50
+      scsi1:
+        size: 50
     cd_drives:
-      - id: ide0
+      ide0:
         iso: debian-11.4.0-amd64-netinst.iso
         storage: local
     snapshots:
-      - created
+      created:
+
+  200:
+    template: 9000
+    name: k3s-master-001
+    cores: 4
+    memory: 4096
+    onboot: true
+    ci:
+      user: rsandor
+      ssh_keys: "{{ ssh_keys }}"
+      ipconfig:
+        - ip: '192.168.1.21/24'
+          gateway: '192.168.1.1'
+    network_devices:
+      net0:
+    disks:
+      scsi0:
+        size: 50
+
+  201:
+    template: 9000
+    name: k3s-node-001
+    cores: 4
+    memory: 4096
+    onboot: true
+    ci:
+      user: rsandor
+      ssh_keys: "{{ ssh_keys }}"
+      ipconfig:
+        - ip: '192.168.1.22/24'
+          gateway: '192.168.1.1'
+    network_devices:
+      net0:
+    disks:
+      scsi0:
+        size: 50
+
+  202:
+    template: 9000
+    name: k3s-node-002
+    cores: 4
+    memory: 4096
+    onboot: true
+    ci:
+      user: rsandor
+      ssh_keys: "{{ ssh_keys }}"
+      ipconfig:
+        - ip: '192.168.1.23/24'
+          gateway: '192.168.1.1'
+    network_devices:
+      net0:
+    disks:
+      scsi0:
+        size: 50
+
+  400:
+    template: 9000
+    name: debian-test
+    cores: 4
+    memory: 4096
+    ci:
+      user: rsandor
+      ssh_keys: "{{ ssh_keys }}"
+      ipconfig:
+        - ip: '192.168.1.31/24'
+          gateway: '192.168.1.1'
+    network_devices:
+      net0:
+    disks:
+      scsi0:
+        size: 50
+    snapshots:
+      created:
+
+  401:
+    template: 9001
+    name: ubuntu-server-test
+    cores: 4
+    memory: 4096
+    ci:
+      user: rsandor
+      ssh_keys: "{{ ssh_keys }}"
+      ipconfig:
+        - ip: '192.168.1.32/24'
+          gateway: '192.168.1.1'
+    network_devices:
+      net0:
+    disks:
+      scsi0:
+        size: 50
+    snapshots:
+      created:
+
+containers:
+
+  1001:
+    hostname: ubuntu-ct
+    password: changeme
+    ssh_keys: "{{ ssh_keys }}"
+    template:
+      storage: local
+      name: ubuntu-22.04-standard_22.04-1_amd64.tar.zst
+    cores: 4
+    memory: 2048
+    swap: 2048
+    network_devices:
+      net0:
+        name: eth0
+        bridge: vmbr0
+        ip: 192.168.1.51/24
+        gateway: 192.168.1.1
+    rootfs:
+      storage: local-lvm
+      size: 15

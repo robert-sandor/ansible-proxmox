@@ -1,0 +1,54 @@
+---
+- name: vm-{{ vm.key }}>   Update VM configuration
+  vars:
+    cores: "{{ vm.value.cores | default(vm_defaults.cores) }}"
+    cores_cfg: "{{ ' --cores ' + cores if cores | int != vm_config.cores else '' }}"
+    cpu: "{{ vm.value.cpu | default(vm_defaults.cpu) }}"
+    cpu_cfg: "{{ ' --cpu ' + cpu if cpu != vm_config.cpu | default('') else '' }}"
+    memory: "{{ vm.value.memory | default(vm_defaults.memory) }}"
+    memory_cfg: "{{ ' --memory ' + memory if memory | int != vm_config.memory else '' }}"
+    onboot: "{{ vm.value.memory | default(vm_defaults.memory) | ternary(1, 0) }}"
+    onboot_cfg: "{{ ' --onboot ' + onboot | string if onboot | int != vm_config.onboot else '' }}"
+    scsihw: "{{ vm.value.scsihw | default(vm_defaults.scsihw) }}"
+    scsihw_cfg: "{{ ' --scsihw ' + scsihw if scsihw != vm_config.scsihw else '' }}"
+    sockets: "{{ vm.value.sockets | default(vm_defaults.sockets) }}"
+    sockets_cfg: "{{ ' --sockets ' + sockets if sockets | int != vm_config.sockets | default('') else '' }}"
+    vm_tags: "{{ (vm.value.tags | default([]) + [managed_by_ansible_tag]) | join(',') }}"
+    vm_tags_cfg: "{{ ' --tags ' + vm_tags if vm_tags != '' and vm_tags != vm_config.tags | default('') else '' }}"
+    vga: "{{ vm.value.vga | default(vm_defaults.vga) }}"
+    vga_cfg: "{{ ' --vga ' + vga if vga != vm_config.vga | default('') else '' }}"
+
+    ci_user: "{{ vm.value.ci.user if vm.value.ci is defined else '' }}"
+    ci_user_cfg: "{{ ' --ciuser ' + ci_user if ci_user != vm_config.ciuser | default('') else '' }}"
+    ci_ssh_keys: "{{ vm.value.ci.ssh_keys | urlencode | replace('/', '%2f') if vm.value.ci is defined else '' }}"
+    ci_ssh_keys_cfg: "{{ ' --sshkeys ' + ci_ssh_keys if ci_ssh_keys != vm_config.sshkeys | default('') else '' }}"
+    ci_pass: "{{ vm.value.ci.password if vm.value.ci is defined and vm.value.ci.password is defined else '' }}"
+    ci_pass_cfg: "{{ ' --cipassword ' + ci_pass if ci_pass != vm_config.cipassword | default('') else '' }}"
+    ci_ns: "{{ vm.value.ci.nameserver if vm.value.ci is defined and vm.value.ci.nameserver is defined else '' }}"
+    ci_ns_cfg: "{{ ' --nameserver ' + ci_ns if ci_ns != vm_config.nameserver | default('') else '' }}"
+    ci_sd: "{{ vm.value.ci.searchdomain if vm.value.ci is defined and vm.value.ci.searchdomain is defined else '' }}"
+    ci_sd_cfg: "{{ ' --searchdomain ' + ci_sd if ci_sd != vm_config.searchdomain | default('') else '' }}"
+
+    to_delete: "{{ 'nameserver,' if ci_ns == '' and vm_config.nameserver is defined else '' }}\
+      {{ 'searchdomain,' if ci_sd == '' and vm_config.searchdomain is defined else '' }}\
+      {{ 'tags' if vm_tags == '' and vm_config.tags is defined else '' }}"
+    delete_cfg: "{{ ' --delete ' + to_delete if to_delete != '' else '' }}"
+
+    to_update: "\
+      {{ cores_cfg }}\
+      {{ cpu_cfg }}\
+      {{ memory_cfg }}\
+      {{ onboot_cfg }}\
+      {{ scsihw_cfg }}\
+      {{ sockets_cfg }}\
+      {{ ci_user_cfg }}\
+      {{ ci_ssh_keys_cfg }}\
+      {{ ci_pass_cfg }}\
+      {{ ci_ns_cfg }}\
+      {{ ci_sd_cfg }}\
+      {{ vm_tags_cfg }}\
+      {{ delete_cfg }}"
+  ansible.builtin.shell: >-
+    pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config {{ to_update | trim }}
+  when: to_update | trim != ''
+  changed_when: true

@@ -22,7 +22,7 @@
     --cores {{ container.cores | default(container_defaults.cores) }}
     --memory {{ container.memory | default(container_defaults.memory) }}
     --swap {{ container.swap | default(container_defaults.swap) }}
-    --rootfs {{ container.rootfs.storage }}:{{ container.rootfs.size_in_gb }}
+    --rootfs {{ container.rootfs.storage }}:{{ container.rootfs.size }}
     --features nesting={{ container.nesting | default(container_defaults.nesting) | ternary(1, 0) }}
     --onboot {{ container.onboot | default(container_defaults.onboot) | ternary(1, 0) }}
     --unprivileged {{ container.unprivileged | default(container_defaults.unprivileged) | ternary(1, 0) }}

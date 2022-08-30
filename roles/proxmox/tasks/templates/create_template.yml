@@ -1,54 +1,68 @@
 ---
 - name: Validate VM ID is not already in use
   ansible.builtin.fail:
-    msg: "VM ID {{ template.vmid }} is already in use by a VM that is not a template."
-  when: template.vmid in existing_vms | json_query('[].vmid') and existing_vms | json_query(query) != [1]
+    msg: "VM ID {{ template.key }} is already in use by a VM that is not a template."
+  when: template.key in existing_vms | json_query('[].vmid') and existing_vms | json_query(query) != [1]
   vars:
-    query: "[?vmid == `{{ template.vmid }}`].template"
+    query: "[?vmid == `{{ template.key }}`].template"
 
 - name: Create template if not exists
   when: >-
-    template.vmid not in existing_vms | json_query('[].vmid')
+    template.key not in existing_vms | json_query('[].vmid')
   block:
     - name: Create a new VM
       ansible.builtin.shell: >
-        pvesh create /nodes/{{ ansible_facts.hostname }}/qemu
-        --vmid {{ template.vmid }}
-        --name {{ template.name }}
-        --memory 2048
-        --net0 virtio,bridge=vmbr0
-        --ostype l26
+        pvesh create /nodes/{{ ansible_facts.hostname }}/qemu --vmid {{ template.key }}
       changed_when: true
 
-    - name: Get cloudimg {{ template.cloud_image_url }}
+    - name: Get cloudimg {{ template.value.cloud_image_url }}
       ansible.builtin.get_url:
-        url: "{{ template.cloud_image_url }}"
+        url: "{{ template.value.cloud_image_url }}"
         dest: /tmp
         mode: 0755
       register: downloaded_image
 
     - name: Import the downloaded disk
-      ansible.builtin.shell: qm importdisk {{ template.vmid }} {{ downloaded_image.dest }} local-lvm
+      ansible.builtin.shell: qm importdisk {{ template.key }} {{ downloaded_image.dest }} {{ template.vale.storage }}
       changed_when: true
 
     - name: Get VM configuration
       ansible.builtin.shell: >
-        pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ template.vmid }}/config --output-format json
+        pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ template.key }}/config --output-format json
       register: vm_config
       changed_when: false
 
     - name: Update VM configuration
+      network_devices: "{{ template.value.network_devices | default({'net0':{'type': 'virtio', 'bridge': 'vmbr0'}}) | dict2items }}"
+      network_devices_cfg: "{% for netdev in network_devices %}
+        --{{ netdev.key }} {{ netdev.value.type | default(vm_defaults.netdev_type) }}\
+        {{ '=' + netdev.value.mac if netdev.value.mac is defined else '' }},\
+        bridge={{ netdev.value.bridge | default(vm_defaults.netdev_bridge) }},\
+        firewall={{ netdev.value.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }},\
+        {{ ',tag=' + netdev.value.vlan_tag | string if netdev.value.vlan_tag is defined else '' }}
+        {% endfor %}"
       ansible.builtin.shell: >
-        pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ template.vmid }}/config
-        --scsihw virtio-scsi-pci
+        pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ template.key }}/config
+        --name {{ template.value.name }}
+        --bios {{ template.value.bios | default(vm_defaults.bios) }}
+        --cores {{ template.value.cores | default(vm_defaults.cores) }}
+        --cpu {{ template.value.cpu | default(vm_defaults.cpu) }}
+        --machine {{ template.value.machine | default(vm_defaults.machine) }}
+        --memory {{ template.value.memory | default(vm_defaults.memory) }}
+        --ostype {{ template.value.ostype | default(vm_defaults.ostype) }}
+        --scsihw {{ template.value.scsihw | default(vm_defaults.scsihw) }}
+        --sockets {{ template.value.sockets | default(vm_defaults.sockets) }}
         --scsi0 {{ vm_config.stdout | from_json | json_query('unused0') }}
-        --ide0 local-lvm:cloudinit
-        --boot c
-        --bootdisk scsi0
-        --serial0 socket
-        --vga serial0
+        --ide0 {{ template.value.storage }}:cloudinit
+        --boot order=scsi0
+        --vga {{ template.value.vga | default(vm_defaults.vga) }}
+        {% if 'ovmf' in template.value.bios | default(vm_defaults.bios) %}
+        --efidisk0 {{ template.value.storage }}:1,efitype=4m,pre-enrolled-keys=1
+        --tpmstate0 {{ template.value.storage }}:1,version=v2.0
+        {% endif %}
+        {{ network_devices_cfg }}
       changed_when: true
 
     - name: Convert VM into a template
-      ansible.builtin.shell: pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ template.vmid }}/template
+      ansible.builtin.shell: pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ template.key }}/template
       changed_when: true

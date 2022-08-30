@@ -1,0 +1,9 @@
+---
+- name: Clone from template
+  ansible.builtin.shell: >-
+    pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.value.template }}/clone
+    --newid {{ vm.key }}
+  changed_when: true
+
+- name: Configure cloned VM
+  ansible.builtin.import_tasks: update_vm.yml
