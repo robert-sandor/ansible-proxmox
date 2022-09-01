@@ -14,3 +14,4 @@
   when: enable_acme
 
 - ansible.builtin.import_tasks: install_nginx.yml
+  when: install_nginx_proxy
