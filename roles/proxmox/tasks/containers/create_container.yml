@@ -1,33 +1,33 @@
 ---
-- name: Create new container
+- name: Container {{ ct.key }}> Create new container
   vars:
-    netcfg: "{% for netdev in container.network_devices %}
-      --{{ netdev.id }} name={{ netdev.name }},\
-      bridge={{ netdev.bridge }},\
-      firewall={{ netdev.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }},\
-      ip={{ netdev.ip }},\
-      gw={{ netdev.gateway }}\
-      {{ ',tag=' + netdev.vlan_tag | string if netdev.vlan_tag is defined else '' }}
+    netcfg: "{% for net in ct.value.network_devices | default({}) | dict2items %}
+      --{{ net.key }} name={{ net.value.name }},\
+      bridge={{ net.value.bridge }},\
+      firewall={{ net.value.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }},\
+      ip={{ net.value.ip }},\
+      gw={{ net.value.gateway }}\
+      {{ ',tag=' + net.value.vlan_tag | string if net.value.vlan_tag is defined else '' }}
       {% endfor %}"
-    container_tags: "{{ '--tags ' + (container.tags | default([]) + [managed_by_ansible_tag]) | join(',') }}"
-    nameserver: "{{ '--nameserver ' + container.nameserver if container.nameserver is defined else '' }}"
-    searchdomain: "{{ '--searchdomain ' + container.searchdomain if container.searchdomain is defined else '' }}"
+    container_tags: "{{ '--tags ' + (ct.value.tags | default([]) + [managed_by_ansible_tag]) | join(',') }}"
+    nameserver: "{{ '--nameserver ' + ct.value.nameserver if ct.value.nameserver is defined else '' }}"
+    searchdomain: "{{ '--searchdomain ' + ct.value.searchdomain if ct.value.searchdomain is defined else '' }}"
   ansible.builtin.shell: >-
     pvesh create /nodes/{{ ansible_facts.hostname }}/lxc
-    --vmid {{ container.vmid }}
-    --ostemplate {{ container.template.storage }}:vztmpl/{{ container.template.name }}
-    --hostname {{ container.hostname }}
-    --password {{ container.password }}
-    --ssh-public-keys "{{ container.ssh_keys }}"
-    --cores {{ container.cores | default(container_defaults.cores) }}
-    --memory {{ container.memory | default(container_defaults.memory) }}
-    --swap {{ container.swap | default(container_defaults.swap) }}
-    --rootfs {{ container.rootfs.storage }}:{{ container.rootfs.size }}
-    --features nesting={{ container.nesting | default(container_defaults.nesting) | ternary(1, 0) }}
-    --onboot {{ container.onboot | default(container_defaults.onboot) | ternary(1, 0) }}
-    --unprivileged {{ container.unprivileged | default(container_defaults.unprivileged) | ternary(1, 0) }}
-    --timezone {{ container.timezone | default(container_defaults.timezone) }}
-    --start {{ container.start | default(container_defaults.start) | ternary(1, 0) }}
+    --vmid {{ ct.key }}
+    --ostemplate {{ ct.value.template.storage }}:vztmpl/{{ ct.value.template.name }}
+    --hostname {{ ct.value.hostname }}
+    --password {{ ct.value.password }}
+    --ssh-public-keys "{{ ct.value.ssh_keys }}"
+    --cores {{ ct.value.cores | default(container_defaults.cores) }}
+    --memory {{ ct.value.memory | default(container_defaults.memory) }}
+    --swap {{ ct.value.swap | default(container_defaults.swap) }}
+    --rootfs {{ ct.value.rootfs.storage }}:{{ ct.value.rootfs.size }}
+    --features nesting={{ ct.value.nesting | default(container_defaults.nesting) | ternary(1, 0) }}
+    --onboot {{ ct.value.onboot | default(container_defaults.onboot) | ternary(1, 0) }}
+    --unprivileged {{ ct.value.unprivileged | default(container_defaults.unprivileged) | ternary(1, 0) }}
+    --timezone {{ ct.value.timezone | default(container_defaults.timezone) }}
+    --start {{ ct.value.start | default(container_defaults.start) | ternary(1, 0) }}
     {{ nameserver }}
     {{ searchdomain }}
     {{ container_tags }}
