@@ -1,5 +1,5 @@
 ---
-- name: Create standalone VM
+- name: VM-{{ vm.key }}> Create standalone VM
   vars:
     cd_drives: "{% for drive in vm.value.cd_drives | default({}) | dict2items %}\
       --{{ drive.key }} {{ drive.value.storage | default(vm.value.storage) }}:iso/{{ drive.value.iso }},media=cdrom \
@@ -28,6 +28,7 @@
     --scsihw {{ vm.value.scsihw | default(vm_defaults.scsihw) }}
     --sockets {{ vm.value.sockets | default(vm_defaults.sockets) }}
     --vga {{ vm.value.vga | default(vm_defaults.vga) }}
+    --tags {{ managed_by_ansible_tag }},{{ vm.value.tags | default([]) | join(',') }}
     {{ cd_drives }}
     {{ disks }}
     {{ network_devices }}

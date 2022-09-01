@@ -9,6 +9,6 @@
   ansible.builtin.include_tasks: create_template.yml
   vars:
     existing_vms: "{{ existing_vms_response.stdout | from_json }}"
-  with_items: "{{ templates }}"
+  with_items: "{{ templates | default({}) | dict2items }}"
   loop_control:
     loop_var: template

@@ -1,16 +1,17 @@
 ---
-- name: vm-{{ vm.key }}>   Update VM configuration
+- name: VM-{{ vm.key }}> Update VM configuration
   vars:
+    name: "{{ ' --name ' + vm.value.name if vm.value.name is defined and vm.value.name != vm_config.name else '' }}"
     cores: "{{ vm.value.cores | default(vm_defaults.cores) }}"
-    cores_cfg: "{{ ' --cores ' + cores if cores | int != vm_config.cores else '' }}"
+    cores_cfg: "{{ ' --cores ' + cores if cores | int != vm_config.cores | default('') else '' }}"
     cpu: "{{ vm.value.cpu | default(vm_defaults.cpu) }}"
     cpu_cfg: "{{ ' --cpu ' + cpu if cpu != vm_config.cpu | default('') else '' }}"
     memory: "{{ vm.value.memory | default(vm_defaults.memory) }}"
-    memory_cfg: "{{ ' --memory ' + memory if memory | int != vm_config.memory else '' }}"
-    onboot: "{{ vm.value.memory | default(vm_defaults.memory) | ternary(1, 0) }}"
-    onboot_cfg: "{{ ' --onboot ' + onboot | string if onboot | int != vm_config.onboot else '' }}"
+    memory_cfg: "{{ ' --memory ' + memory if memory | int != vm_config.memory | default('') else '' }}"
+    onboot: "{{ vm.value.memory | default(vm_defaults.onboot) | ternary(1, 0) }}"
+    onboot_cfg: "{{ ' --onboot ' + onboot | string if onboot | int != vm_config.onboot | default('') else '' }}"
     scsihw: "{{ vm.value.scsihw | default(vm_defaults.scsihw) }}"
-    scsihw_cfg: "{{ ' --scsihw ' + scsihw if scsihw != vm_config.scsihw else '' }}"
+    scsihw_cfg: "{{ ' --scsihw ' + scsihw if scsihw != vm_config.scsihw | default('') else '' }}"
     sockets: "{{ vm.value.sockets | default(vm_defaults.sockets) }}"
     sockets_cfg: "{{ ' --sockets ' + sockets if sockets | int != vm_config.sockets | default('') else '' }}"
     vm_tags: "{{ (vm.value.tags | default([]) + [managed_by_ansible_tag]) | join(',') }}"
@@ -35,6 +36,7 @@
     delete_cfg: "{{ ' --delete ' + to_delete if to_delete != '' else '' }}"
 
     to_update: "\
+      {{ name }}\
       {{ cores_cfg }}\
       {{ cpu_cfg }}\
       {{ memory_cfg }}\

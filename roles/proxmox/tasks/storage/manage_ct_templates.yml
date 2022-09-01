@@ -1,41 +1,41 @@
 ---
-- name: Get CT templates
+- name: Storage {{ storage_config.key }}> Get CT templates
   ansible.builtin.shell:
-    pvesh get /nodes/{{ ansible_facts.hostname }}/storage/{{ storage.name }}/content
+    pvesh get /nodes/{{ ansible_facts.hostname }}/storage/{{ storage_config.key }}/content
     --content vztmpl
     --output-format json
   changed_when: false
   register: existing_ct_templates
 
-- name: Get available CT images
+- name: Storage {{ storage_config.key }}> Get available CT images
   ansible.builtin.shell: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/aplinfo --output-format json
   changed_when: false
   register: aplinfo
 
-- name: Update CT templates
+- name: Storage {{ storage_config.key }}> Update CT templates
   vars:
     existing_ct_template_names:
       "{{ existing_ct_templates.stdout | from_json | json_query('[].volid') | map('basename') }}"
   block:
-    - name: Download CT templates
+    - name: Storage {{ storage_config.key }}> Download CT templates
       ansible.builtin.shell: >-
-        pvesh create /nodes/{{ ansible_facts.hostname }}/storage/{{ storage.name }}/download-url
+        pvesh create /nodes/{{ ansible_facts.hostname }}/storage/{{ storage_config.key }}/download-url
         --content vztmpl
         --filename {{ ct_template | basename }}
         --url {{ ct_template_url[0] }}
       when: ct_template | basename not in existing_ct_template_names
-      with_items: "{{ storage.ct_templates }}"
+      with_items: "{{ storage_config.value.ct_templates }}"
       loop_control:
         loop_var: ct_template
       vars:
         search_query: "[?template == '{{ ct_template }}'].location"
         ct_template_url: "{{ aplinfo.stdout | from_json | json_query(search_query) }}"
 
-    - name: Delete CT templates
+    - name: Storage {{ storage_config.key }}> Delete CT templates
       ansible.builtin.shell: >-
-        pvesh delete /nodes/{{ ansible_facts.hostname }}/storage/{{ storage.name }}/content/{{ ct_template }}
-      when: ct_template | basename not in storage.ct_templates
+        pvesh delete /nodes/{{ ansible_facts.hostname }}/storage/{{ storage_config.key }}/content/{{ ct_template }}
+      when: ct_template | basename not in storage_config.value.ct_templates
       with_items: "{{ existing_ct_templates.stdout | from_json | json_query('[].volid') }}"
       loop_control:
         loop_var: ct_template

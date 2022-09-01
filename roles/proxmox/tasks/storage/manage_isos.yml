@@ -1,32 +1,32 @@
 ---
-- name: Get ISO images
+- name: Storage {{ storage_config.key }}> Get ISO images
   ansible.builtin.shell:
-    pvesh get /nodes/{{ ansible_facts.hostname }}/storage/{{ storage.name }}/content
+    pvesh get /nodes/{{ ansible_facts.hostname }}/storage/{{ storage_config.key }}/content
     --content iso
     --output-format json
   changed_when: false
   register: existing_iso_files
 
-- name: Update ISO images
+- name: Storage {{ storage_config.key }}> Update ISO images
   vars:
-    iso_names: "{{ storage.isos | map('basename') }}"
+    iso_names: "{{ storage_config.value.isos | map('basename') }}"
     existing_iso_names:
       "{{ existing_iso_files.stdout | from_json | json_query('[].volid') | map('basename') }}"
   block:
-    - name: Download ISO images
+    - name: Storage {{ storage_config.key }}> Download ISO images
       ansible.builtin.shell: >-
-        pvesh create /nodes/{{ ansible_facts.hostname }}/storage/{{ storage.name }}/download-url
+        pvesh create /nodes/{{ ansible_facts.hostname }}/storage/{{ storage_config.key }}/download-url
         --content iso
         --filename {{ iso | basename }}
         --url {{ iso }}
       when: iso | basename not in existing_iso_names
-      with_items: "{{ storage.isos }}"
+      with_items: "{{ storage_config.value.isos }}"
       loop_control:
         loop_var: iso
 
-    - name: Delete ISO images
+    - name: Storage {{ storage_config.key }}> Delete ISO images
       ansible.builtin.shell: >-
-        pvesh delete /nodes/{{ ansible_facts.hostname }}/storage/{{ storage.name }}/content/{{ iso }}
+        pvesh delete /nodes/{{ ansible_facts.hostname }}/storage/{{ storage_config.key }}/content/{{ iso }}
       when: iso | basename not in iso_names
       with_items: "{{ existing_iso_files.stdout | from_json | json_query('[].volid') }}"
       loop_control:

@@ -56,6 +56,7 @@ vms:
     cores: 4
     memory: 4096
     onboot: true
+    storage: local-lvm
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
@@ -74,6 +75,7 @@ vms:
     cores: 4
     memory: 4096
     onboot: true
+    storage: local-lvm
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
@@ -92,6 +94,7 @@ vms:
     cores: 4
     memory: 4096
     onboot: true
+    storage: local-lvm
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
@@ -109,6 +112,7 @@ vms:
     name: debian-test
     cores: 4
     memory: 4096
+    storage: local-lvm
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
@@ -128,6 +132,7 @@ vms:
     name: ubuntu-server-test
     cores: 4
     memory: 4096
+    storage: local-lvm
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
