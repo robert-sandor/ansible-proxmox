@@ -1,6 +1,12 @@
 ---
 domain: yavin.xyz
 
+switch_to_community_updates_repo: true
+disable_no_subscription_prompt: true
+install_pve_discord_dark_theme: true
+enable_acme: false
+install_nginx_proxy: true
+
 acme_email: changeme
 acme_staging: false
 acme_plugin_name: cloudflare

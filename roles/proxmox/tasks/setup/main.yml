@@ -1,7 +1,16 @@
 ---
 - ansible.builtin.import_tasks: switch_to_community_updates_repo.yml
+  when: switch_to_community_updates_repo
+
 - ansible.builtin.import_tasks: update.yml
+
 - ansible.builtin.import_tasks: disable_subscription_prompt.yml
+  when: disable_no_subscription_prompt
+
 - ansible.builtin.import_tasks: install_pve_dark_theme.yml
+  when: install_pve_discord_dark_theme
+
 - ansible.builtin.import_tasks: acme/enable_acme.yml
+  when: enable_acme
+
 - ansible.builtin.import_tasks: install_nginx.yml
