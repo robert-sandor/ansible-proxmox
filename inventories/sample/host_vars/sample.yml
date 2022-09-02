@@ -8,8 +8,25 @@ acme_plugin_type: dns
 acme_plugin_cloudflare_email: changeme
 acme_plugin_cloudflare_token: changeme
 
+# if using Azure dns provider uncomment
+# acme_plugin_name: azure
+# acme_plugin_azure_appid: changeme
+# acme_plugin_azure_clientsecret: changeme
+# acme_plugin_azure_subscriptionid: changeme
+# acme_plugin_azure_tenantid: changeme
+
 ssh_keys: changeme
 
+pcie_passthrough:
+  ids: 
+      - 10de:1c30
+      - 10de:10f1
+  blocklist: 
+      - nouveau
+      - nvidia
+      - radeon
+      - amdgpu  
+  
 templates:
   9000:
     name: debian-bullseye

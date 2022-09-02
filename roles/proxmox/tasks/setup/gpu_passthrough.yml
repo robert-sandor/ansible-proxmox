@@ -1,0 +1,64 @@
+---
+- name: Enable vfio for gpu passthrough
+  when: pcie_passthrough is defined
+  block:
+    - name: Add iommu support to grub
+      ansible.builtin.lineinfile:
+        path: /etc/default/grub
+        regexp: >-
+          ^GRUB_CMDLINE_LINUX_DEFAULT="quiet.*$
+        line: GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on"
+      notify: Update-grub
+
+    - name: Add vfio modules
+      ansible.builtin.blockinfile:
+        path: /etc/modules
+        block: |
+          vfio
+          vfio_iommu_type1
+          vfio_pci
+          vfio_virqfd
+        owner: root
+        group: root
+        mode: '0644'
+        create: true
+
+    - name: Update grub
+      ansible.builtin.lineinfile:
+        line: options vfio_iommu_type1 allow_unsafe_interrupts=1
+        path: /etc/modprobe.d/iommu_unsafe_interrupts.conf
+        owner: root
+        group: root
+        mode: '0644'
+        create: true
+
+    - name: Update kvm
+      ansible.builtin.lineinfile:
+        line: options kvm ignore_msrs=1
+        path: /etc/modprobe.d/kvm.conf
+        owner: root
+        group: root
+        mode: '0644'
+        create: true
+
+    - name: Blacklist modules
+      ansible.builtin.lineinfile:
+        line: blacklist {{ module }}
+        path: /etc/modprobe.d/blacklist.conf
+        owner: root
+        group: root
+        mode: '0644'
+        create: true
+      with_items: "{{ pcie_passthrough.blocklist }}"
+      loop_control:
+        loop_var: module
+
+    - name: Add gpu id to vfio.conf
+      ansible.builtin.lineinfile:
+        line: options vfio-pci ids={{ pcie_passthrough.ids | join(',') }} disable_vga=1
+        path: /etc/modprobe.d/vfio.conf
+        owner: root
+        group: root
+        mode: '0644'
+        create: true
+      notify: Update-initramfs

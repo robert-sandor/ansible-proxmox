@@ -1,0 +1,31 @@
+---
+# Simple playbook to list available CT images from Proxmox's database
+#
+# Example:
+#
+# To list all images
+# ansible-playbook playbooks/list_ct_images.yml -i inventories/sample/hosts.yml
+#
+# To list images containing a keyword
+# ansible-playbook playbooks/list_ct_images.yml -i inventories/sample/hosts.yml -e "search=ubuntu"
+
+- hosts: all
+
+  name: List available PCIE devices
+
+  vars:
+    search:
+
+  tasks:
+    - name: Get PCIE devices list
+      ansible.builtin.shell: >-
+        pvesh get /nodes/{{ ansible_facts.hostname }}/hardware/pci --output-format json
+      changed_when: false
+      register: pciedevices
+
+    - name: Print available PCIE devices list
+      ansible.builtin.debug:
+        msg: "{{ available_pcie_devices }}"
+      vars:
+        search_query: "[?contains(vendor_name, '{{ search }}')]"
+        available_pcie_devices: "{{ pciedevices.stdout | from_json | json_query(search_query) }}"

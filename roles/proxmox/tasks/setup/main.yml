@@ -5,3 +5,4 @@
 - ansible.builtin.import_tasks: install_pve_dark_theme.yml
 - ansible.builtin.import_tasks: acme/enable_acme.yml
 - ansible.builtin.import_tasks: install_nginx.yml
+- ansible.builtin.import_tasks: gpu_passthrough.yml
