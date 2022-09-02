@@ -10,11 +10,15 @@ install_nginx_proxy: true
 acme_email: changeme
 acme_staging: false
 acme_plugin_name: cloudflare
-acme_plugin_type: dns
 acme_plugin_cloudflare_email: changeme
 acme_plugin_cloudflare_token: changeme
 
 ssh_keys: changeme
+
+vm_iso_remove_unrefereced: true
+ct_template_remove_unreferenced: true
+vm_remove_unreferenced: true
+container_remove_unreferenced: true
 
 templates:
   9000:

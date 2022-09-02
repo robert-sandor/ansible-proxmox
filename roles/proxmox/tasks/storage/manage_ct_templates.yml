@@ -35,7 +35,7 @@
     - name: Storage {{ storage_config.key }}> Delete CT templates
       ansible.builtin.shell: >-
         pvesh delete /nodes/{{ ansible_facts.hostname }}/storage/{{ storage_config.key }}/content/{{ ct_template }}
-      when: ct_template | basename not in storage_config.value.ct_templates
+      when: ct_template_remove_unreferenced and ct_template | basename not in storage_config.value.ct_templates
       with_items: "{{ existing_ct_templates.stdout | from_json | json_query('[].volid') }}"
       loop_control:
         loop_var: ct_template

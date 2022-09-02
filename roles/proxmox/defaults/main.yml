@@ -7,7 +7,10 @@ install_nginx_proxy: true
 
 managed_by_ansible_tag: managed_by_ansible
 
+vm_iso_remove_unrefereced: true
+ct_template_remove_unreferenced: true
 vm_remove_unreferenced: true
+container_remove_unreferenced: true
 
 vm_defaults:
   bios: ovmf
@@ -23,8 +26,6 @@ vm_defaults:
   netdev_firewall: true
   netdev_type: virtio
   netdev_bridge: vmbr0
-
-container_remove_unreferenced: true
 
 container_defaults:
   cores: 1
