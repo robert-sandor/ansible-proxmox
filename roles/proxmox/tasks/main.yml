@@ -3,7 +3,7 @@
   tags: setup
 
 - name: Flush handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - ansible.builtin.import_tasks: templates/main.yml
   tags: templates
