@@ -1,5 +1,5 @@
 ---
-- name: vm-{{ vm.key }}>   Update network device
+- name: VM-{{ vm.key }}> Update network device
   vars:
     existing_net_config: "{{ vm_config[netdev.key] | default('') }}"
     net_config: "{{ '' if existing_net_config == '' else \
@@ -18,7 +18,7 @@
   loop_control:
     loop_var: netdev
 
-- name: vm-{{ vm.key }}> Remove undeclared network interfaces
+- name: VM-{{ vm.key }}> Remove undeclared network interfaces
   vars:
     query: "[?starts_with(key, 'net')].key"
     current_network_devs: "{{ vm_config | dict2items | json_query(query) }}"

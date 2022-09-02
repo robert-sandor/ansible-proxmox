@@ -1,12 +1,12 @@
 ---
-- name: Get current status of container
+- name: Container {{ ct.key }}> Get current status of container
   ansible.builtin.shell: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/lxc/{{ container_id }}/status/current
     --output-format json
   changed_when: false
   register: container_status_raw
 
-- name: Remove container if managed by ansible
+- name: Container {{ ct.key }}> Remove container if managed by ansible
   ansible.builtin.shell: >-
     pvesh delete /nodes/{{ ansible_facts.hostname }}/lxc/{{ container_id }}
     --force 1

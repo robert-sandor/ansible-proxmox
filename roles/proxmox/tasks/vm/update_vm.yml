@@ -1,11 +1,11 @@
 ---
-- name: vm-{{ vm.key }}> Get existing VM configuration
+- name: VM-{{ vm.key }}> Get existing VM configuration
   ansible.builtin.shell: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config --output-format json
   register: vm_config_response
   changed_when: false
 
-- name: vm-{{ vm.key }}> Update VM configuration
+- name: VM-{{ vm.key }}> Update VM configuration
   vars:
     vm_config: "{{ vm_config_response.stdout | from_json }}"
   block:
@@ -13,5 +13,4 @@
     - ansible.builtin.import_tasks: update_network_devices.yml
     - ansible.builtin.import_tasks: update_disks.yml
     - ansible.builtin.import_tasks: update_cd_drives.yml
-    - ansible.builtin.import_tasks: update_snapshots.yml
     - ansible.builtin.import_tasks: update_snapshots.yml

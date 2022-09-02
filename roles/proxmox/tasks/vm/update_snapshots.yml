@@ -1,21 +1,21 @@
 ---
-- name: Validate snapshot names
+- name: VM-{{ vm.key }}> Validate snapshot names
   ansible.builtin.fail:
     msg: "Snapshot name 'current' is reserved, and can not be used."
   when: vm.value.snapshots is defined and 'current' in vm.value.snapshots.keys()
 
-- name: Get existing snapshots
+- name: VM-{{ vm.key }}> Get existing snapshots
   ansible.builtin.shell: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/snapshot --output-format json
   changed_when: false
   register: existing_snapshots
 
-- name: Update snapshots
+- name: VM-{{ vm.key }}> Update snapshots
   vars:
     existing_snapshot_names: >-
       {{ existing_snapshots.stdout | from_json | json_query('[].name') | difference(['current']) }}
   block:
-    - name: Create snapshot if not present
+    - name: VM-{{ vm.key }}> Create snapshot if not present
       ansible.builtin.shell: >-
         pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/snapshot
         --snapname {{ snapshot_name }}
@@ -24,10 +24,11 @@
       loop_control:
         loop_var: snapshot_name
 
-    - name: Delete snapshot if not in config
+    - name: VM-{{ vm.key }}> Delete snapshot if not in config
       ansible.builtin.shell: >-
         pvesh delete /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/snapshot/{{ snapshot_name }}
-      changed_when: true
-      with_items: "{{ existing_snapshot_names | difference(vm.value.snapshots) }}"
+      when: existing_snapshot_names != []
+      with_items: "{{ existing_snapshot_names | difference(vm.value.snapshots.keys() \
+        if vm.value.snapshots is defined else []) }}"
       loop_control:
         loop_var: snapshot_name

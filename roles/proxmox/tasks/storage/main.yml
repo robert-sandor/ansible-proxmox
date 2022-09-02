@@ -1,12 +1,6 @@
 ---
-- ansible.builtin.include_tasks: manage_isos.yml
-  when: storage.isos is defined
-  with_items: "{{ storages }}"
+- name: Update storages
+  ansible.builtin.include_tasks: update_storage.yml
+  with_items: "{{ storage | dict2items }}"
   loop_control:
-    loop_var: storage
-
-- ansible.builtin.include_tasks: manage_ct_templates.yml
-  when: storage.ct_templates is defined
-  with_items: "{{ storages }}"
-  loop_control:
-    loop_var: storage
+    loop_var: storage_config

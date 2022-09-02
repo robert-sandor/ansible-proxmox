@@ -1,0 +1,6 @@
+---
+- ansible.builtin.import_tasks: manage_isos.yml
+  when: storage_config.value.isos is defined
+
+- ansible.builtin.import_tasks: manage_ct_templates.yml
+  when: storage_config.value.ct_templates is defined

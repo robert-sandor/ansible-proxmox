@@ -1,10 +1,15 @@
 ---
 domain: yavin.xyz
 
+switch_to_community_updates_repo: true
+disable_no_subscription_prompt: true
+install_pve_discord_dark_theme: true
+enable_acme: false
+install_nginx_proxy: true
+
 acme_email: changeme
 acme_staging: false
 acme_plugin_name: cloudflare
-acme_plugin_type: dns
 acme_plugin_cloudflare_email: changeme
 acme_plugin_cloudflare_token: changeme
 
@@ -16,7 +21,6 @@ acme_plugin_cloudflare_token: changeme
 # acme_plugin_azure_tenantid: changeme
 
 ssh_keys: changeme
-
 pcie_passthrough:
   ids: 
       - 10de:1c30
@@ -27,6 +31,12 @@ pcie_passthrough:
       - radeon
       - amdgpu  
   
+
+vm_iso_remove_unrefereced: true
+ct_template_remove_unreferenced: true
+vm_remove_unreferenced: true
+container_remove_unreferenced: true
+
 templates:
   9000:
     name: debian-bullseye
@@ -73,6 +83,7 @@ vms:
     cores: 4
     memory: 4096
     onboot: true
+    storage: local-lvm
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
@@ -91,6 +102,7 @@ vms:
     cores: 4
     memory: 4096
     onboot: true
+    storage: local-lvm
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
@@ -109,6 +121,7 @@ vms:
     cores: 4
     memory: 4096
     onboot: true
+    storage: local-lvm
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
@@ -126,6 +139,7 @@ vms:
     name: debian-test
     cores: 4
     memory: 4096
+    storage: local-lvm
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
@@ -145,6 +159,7 @@ vms:
     name: ubuntu-server-test
     cores: 4
     memory: 4096
+    storage: local-lvm
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"

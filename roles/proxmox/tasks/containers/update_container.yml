@@ -1,36 +1,36 @@
 ---
-- name: Get existing container config
+- name: Container {{ ct.key }}> Get existing container config
   ansible.builtin.shell: >-
-    pvesh get /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/config
+    pvesh get /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/config
     --output-format json
   changed_when: false
   register: container_config
 
-- name: Update container
+- name: Container {{ ct.key }}> Update container
   vars:
     ct_config: "{{ container_config.stdout | from_json }}"
   block:
-    - name: Update container config
+    - name: Container {{ ct.key }}> Update container config
       vars:
-        hostname: "{{ '--hostname ' + container.hostname if container.hostname != ct_config.hostname else '' }}"
-        cores: "{{ container.cores | default(container_defaults.cores) }}"
+        hostname: "{{ '--hostname ' + ct.value.hostname if ct.value.hostname != ct_config.hostname else '' }}"
+        cores: "{{ ct.value.cores | default(container_defaults.cores) }}"
         cores_cfg: "{{ '--cores ' + cores if cores | int != ct_config.cores else '' }}"
-        memory: "{{ container.memory | default(container_defaults.memory) }}"
+        memory: "{{ ct.value.memory | default(container_defaults.memory) }}"
         memory_cfg: "{{ '--memory ' + memory if memory | int != ct_config.memory else '' }}"
-        swap: "{{ container.swap | default(container_defaults.swap) }}"
+        swap: "{{ ct.value.swap | default(container_defaults.swap) }}"
         swap_cfg: "{{ '--swap ' + swap if swap != ct_config.swap else '' }}"
-        nesting: "nesting={{ container.nesting | default(container_defaults.nesting) | ternary(1, 0) }}"
+        nesting: "nesting={{ ct.value.nesting | default(container_defaults.nesting) | ternary(1, 0) }}"
         features: "{{ '--features ' + nesting if nesting != ct_config.features else '' }}"
-        onboot: "{{ container.onboot | default(container_defaults.onboot) | ternary(1, 0) }}"
+        onboot: "{{ ct.value.onboot | default(container_defaults.onboot) | ternary(1, 0) }}"
         onboot_cfg: "{{ '--onboot ' + onboot | string if onboot | int != ct_config.onboot else '' }}"
-        timezone: "{{ container.timezone | default(container_defaults.timezone) }}"
+        timezone: "{{ ct.value.timezone | default(container_defaults.timezone) }}"
         timezone_cfg: "{{ '--timezone ' + timezone if timezone != ct_config.timezone else '' }}"
 
-        ns: "{{ container.nameserver | default(container_defaults.nameserver) }}"
+        ns: "{{ ct.value.nameserver | default(container_defaults.nameserver) }}"
         ns_cfg: "{{ '--nameserver ' + ns if ns != '' and ns != ct_config.nameserver | default('') else '' }}"
-        sd: "{{ container.searchdomain | default(container_defaults.searchdomain) }}"
+        sd: "{{ ct.value.searchdomain | default(container_defaults.searchdomain) }}"
         sd_cfg: "{{ '--searchdomain ' + sd if sd != '' and sd != ct_config.searchdomain | default('') else '' }}"
-        ct_tags: "{{ (container.tags | default([]) + [managed_by_ansible_tag]) | join(',') }}"
+        ct_tags: "{{ (ct.value.tags | default([]) + [managed_by_ansible_tag]) | join(',') }}"
         ct_tags_cfg: "{{ '--tags ' + ct_tags if ct_tags != '' and ct_tags != ct_config.tags | default('') else '' }}"
 
         to_delete: "{{ 'nameserver,' if ns == '' and ct_config.nameserver is defined else '' }}\
@@ -51,34 +51,34 @@
           {{ delete_cfg }}
 
       ansible.builtin.shell: >-
-        pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/config {{ updated_cfg | trim }}
+        pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/config {{ updated_cfg | trim }}
       when: updated_cfg | trim != ''
       changed_when: true
 
-    - name: Update container network device
+    - name: Container {{ ct.key }}> Update container network device
       vars:
-        net_config: "{{ ct_config[netdev.id] | split(',') | map('split', '=') | items2dict(key_name=0, value_name=1) }}"
+        net_config: "{{ ct_config[net.key] | split(',') | map('split', '=') | items2dict(key_name=0, value_name=1) }}"
 
-        updated_net_config: "name={{ netdev.name }},bridge={{ netdev.bridge }},\
-          firewall={{ netdev.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }}\
-          {{ ',gw=' + netdev.gateway if netdev.gateway is defined else '' }}\
-          {{ ',hwaddr=' + netdev.mac | default(net_config.hwaddr) }}\
-          {{ ',ip=' + netdev.ip if netdev.ip is defined else '' }}\
-          {{ ',tag=' + netdev.vlan_tag | string if netdev.vlan_tag is defined else '' }}\
+        updated_net_config: "name={{ net.value.name }},bridge={{ net.value.bridge }},\
+          firewall={{ net.value.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }}\
+          {{ ',gw=' + net.value.gateway if net.value.gateway is defined else '' }}\
+          {{ ',hwaddr=' + net.value.mac | default(net_config.hwaddr) }}\
+          {{ ',ip=' + net.value.ip if net.value.ip is defined else '' }}\
+          {{ ',tag=' + net.value.vlan_tag | string if net.value.vlan_tag is defined else '' }}\
           ,type=veth"
       ansible.builtin.shell: >-
-        pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/config
-        --{{ netdev.id }} {{ updated_net_config }}
-      when: updated_net_config != ct_config[netdev.id]
-      with_items: "{{ container.network_devices }}"
+        pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/config
+        --{{ net.key }} {{ updated_net_config }}
+      when: updated_net_config != ct_config[net.key]
+      with_items: "{{ ct.value.network_devices | default({}) | dict2items }}"
       loop_control:
-        loop_var: netdev
+        loop_var: net
 
-    - name: Resize root filesystem
+    - name: Container {{ ct.key }}> Resize root filesystem
       vars:
         current_size: "{{ ct_config.rootfs | regex_search('size=([0-9]+)G', '\\1') }}"
       ansible.builtin.shell: >-
-        pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ container.vmid }}/resize
+        pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/resize
         --disk rootfs
-        --size {{ container.rootfs.size }}G
-      when: current_size[0] | int < container.rootfs.size
+        --size {{ ct.value.rootfs.size }}G
+      when: current_size[0] | int < ct.value.rootfs.size
