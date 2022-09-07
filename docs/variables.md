@@ -44,7 +44,7 @@ For a complete list of default variables, you can check [defaults/main.yml](../r
 - `managed_by_ansible_tag`
     - A tag that will be applied to all VMs and containers created by this playbook, mainly used when checking whether to remove a VM or container.
 
-- `vm_iso_remove_unrefereced`
+- `vm_iso_remove_unreferenced`
     - Whether to remove ISO files that are not referenced in the variables.
 
 - `ct_template_remove_unreferenced`
@@ -74,3 +74,8 @@ A dictionary containing the VM template definitions, where:
         - [Ubuntu cloud images](https://cloud-images.ubuntu.com/)
         - [Debian cloud images](https://cloud.debian.org/images/cloud/)
     - `storage` - The name of the Proxmox storage where the template should be created.
+
+## VMs - `vms`
+
+A dictionary containing the VM definitions.
+The key is going to be the `vmid` of the created VM, and the value is a dictionary comprising the [VM definition](vm_variables.md).
