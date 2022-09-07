@@ -15,7 +15,7 @@ acme_plugin_cloudflare_token: changeme
 
 ssh_keys: changeme
 
-vm_iso_remove_unrefereced: true
+vm_iso_remove_unreferenced: true
 ct_template_remove_unreferenced: true
 vm_remove_unreferenced: true
 container_remove_unreferenced: true
