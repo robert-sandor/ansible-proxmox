@@ -13,4 +13,5 @@
     - ansible.builtin.import_tasks: update_network_devices.yml
     - ansible.builtin.import_tasks: update_disks.yml
     - ansible.builtin.import_tasks: update_cd_drives.yml
+    - ansible.builtin.import_tasks: reboot_updated_vm.yml
     - ansible.builtin.import_tasks: update_snapshots.yml

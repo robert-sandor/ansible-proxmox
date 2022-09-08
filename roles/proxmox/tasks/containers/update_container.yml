@@ -57,7 +57,8 @@
 
     - name: Container {{ ct.key }}> Update container network device
       vars:
-        net_config: "{{ ct_config[net.key] | split(',') | map('split', '=') | items2dict(key_name=0, value_name=1) }}"
+        net_config: "{{ ct_config['net' +net.key |string] | \
+          split(',') | map('split', '=') | items2dict(key_name=0, value_name=1) }}"
 
         updated_net_config: "name={{ net.value.name }},bridge={{ net.value.bridge }},\
           firewall={{ net.value.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }}\
@@ -68,8 +69,8 @@
           ,type=veth"
       ansible.builtin.shell: >-
         pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/config
-        --{{ net.key }} {{ updated_net_config }}
-      when: updated_net_config != ct_config[net.key]
+        --net{{ net.key }} {{ updated_net_config }}
+      when: updated_net_config != ct_config['net' +net.key |string]
       with_items: "{{ ct.value.network_devices | default({}) | dict2items }}"
       loop_control:
         loop_var: net

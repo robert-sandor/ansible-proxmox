@@ -36,28 +36,28 @@
       vars:
         network_devices: "{{ template.value.network_devices | default({'net0':{'type': 'virtio', 'bridge': 'vmbr0'}}) | dict2items }}"
         network_devices_cfg: "{% for netdev in network_devices %}
-          --{{ netdev.key }} {{ netdev.value.type | default(vm_defaults.netdev_type) }}\
+          --{{ netdev.key }} {{ netdev.value.type | default(vm_defaults_netdev_type) }}\
           {{ '=' + netdev.value.mac if netdev.value.mac is defined else '' }},\
-          bridge={{ netdev.value.bridge | default(vm_defaults.netdev_bridge) }},\
+          bridge={{ netdev.value.bridge | default(vm_defaults_netdev_bridge) }},\
           firewall={{ netdev.value.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }},\
           {{ ',tag=' + netdev.value.vlan_tag | string if netdev.value.vlan_tag is defined else '' }}
           {% endfor %}"
       ansible.builtin.shell: >
         pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ template.key }}/config
         --name {{ template.value.name }}
-        --bios {{ template.value.bios | default(vm_defaults.bios) }}
-        --cores {{ template.value.cores | default(vm_defaults.cores) }}
-        --cpu {{ template.value.cpu | default(vm_defaults.cpu) }}
-        --machine {{ template.value.machine | default(vm_defaults.machine) }}
-        --memory {{ template.value.memory | default(vm_defaults.memory) }}
-        --ostype {{ template.value.ostype | default(vm_defaults.ostype) }}
-        --scsihw {{ template.value.scsihw | default(vm_defaults.scsihw) }}
-        --sockets {{ template.value.sockets | default(vm_defaults.sockets) }}
+        --bios {{ template.value.bios | default(vm_defaults_bios) }}
+        --cores {{ template.value.cores | default(vm_defaults_cores) }}
+        --cpu {{ template.value.cpu | default(vm_defaults_cpu) }}
+        --machine {{ template.value.machine | default(vm_defaults_machine) }}
+        --memory {{ template.value.memory | default(vm_defaults_memory) }}
+        --ostype {{ template.value.ostype | default(vm_defaults_ostype) }}
+        --scsihw {{ template.value.scsihw | default(vm_defaults_scsihw) }}
+        --sockets {{ template.value.sockets | default(vm_defaults_sockets) }}
         --scsi0 {{ current_template_config.stdout | from_json | json_query('unused0') }}
         --ide0 {{ template.value.storage }}:cloudinit
         --boot order=scsi0
-        --vga {{ template.value.vga | default(vm_defaults.vga) }}
-        {% if 'ovmf' in template.value.bios | default(vm_defaults.bios) %}
+        --vga {{ template.value.vga | default(vm_defaults_vga) }}
+        {% if 'ovmf' in template.value.bios | default(vm_defaults_bios) %}
         --efidisk0 {{ template.value.storage }}:1,efitype=4m,pre-enrolled-keys=1
         --tpmstate0 {{ template.value.storage }}:1,version=v2.0
         {% endif %}

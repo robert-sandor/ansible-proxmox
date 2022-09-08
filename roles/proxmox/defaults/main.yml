@@ -12,20 +12,22 @@ ct_template_remove_unreferenced: true
 vm_remove_unreferenced: true
 container_remove_unreferenced: true
 
-vm_defaults:
-  bios: ovmf
-  cores: 1
-  cpu: host
-  memory: 512
-  onboot: false
-  machine: q35
-  ostype: l26
-  scsihw: virtio-scsi-pci
-  sockets: 1
-  vga: qxl
-  netdev_firewall: true
-  netdev_type: virtio
-  netdev_bridge: vmbr0
+vm_restart_timeout: 240
+
+vm_defaults_agent: false
+vm_defaults_bios: ovmf
+vm_defaults_cores: 1
+vm_defaults_cpu: host
+vm_defaults_memory: 512
+vm_defaults_onboot: false
+vm_defaults_machine: q35
+vm_defaults_ostype: l26
+vm_defaults_scsihw: virtio-scsi-pci
+vm_defaults_sockets: 1
+vm_defaults_vga: qxl
+vm_defaults_netdev_firewall: true
+vm_defaults_netdev_type: virtio
+vm_defaults_netdev_bridge: vmbr0
 
 container_defaults:
   cores: 1
