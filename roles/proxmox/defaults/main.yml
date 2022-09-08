@@ -12,6 +12,9 @@ ct_template_remove_unreferenced: true
 vm_remove_unreferenced: true
 container_remove_unreferenced: true
 
+vm_restart_timeout: 240
+
+vm_defaults_agent: false
 vm_defaults_bios: ovmf
 vm_defaults_cores: 1
 vm_defaults_cpu: host

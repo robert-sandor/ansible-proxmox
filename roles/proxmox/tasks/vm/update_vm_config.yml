@@ -26,6 +26,10 @@
       {{ ' --memory ' + vm.value.memory | default(vm_defaults_memory) | string
       if vm.value.memory | default(vm_defaults_memory) != vm_config.memory | default(512) else '' }}
 
+    set_agent: >-
+      {{ ' --agent ' + vm.value.agent | default(vm_defaults_agent) | ternary(1, 0) | string
+      if vm.value.agent | default(vm_defaults_agent) | ternary('1', '0') != vm_config.agent | default('0') else '' }}
+
     set_onboot: >-
       {{ ' --onboot ' + vm.value.onboot | default(vm_defaults_onboot) | ternary(1, 0) | string
       if vm.value.onboot | default(vm_defaults_onboot) | ternary(1, 0) != vm_config.onboot | default(0) else '' }}
@@ -101,6 +105,7 @@
       {{ set_cpu }}\
       {{ set_sockets }}\
       {{ set_memory }}\
+      {{ set_agent }}\
       {{ set_onboot }}\
       {{ set_scsihw }}\
       {{ set_ci_user }}\
