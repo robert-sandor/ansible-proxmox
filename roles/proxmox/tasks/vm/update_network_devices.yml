@@ -10,7 +10,7 @@
     updated_net_config: "{{ type_and_mac }},bridge={{ netdev.value.bridge | default(vm_defaults_netdev_bridge) }},\
       firewall={{ netdev.value.firewall | default(vm_defaults_netdev_firewall) | ternary(1, 0) }}\
       {{ ',tag=' + netdev.value.vlan_tag | string if netdev.value.vlan_tag is defined else '' }}"
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --net{{ netdev.key }} {{ updated_net_config }}
   when: updated_net_config != existing_net_config
@@ -22,7 +22,7 @@
   vars:
     existing_ip_config: "{{ vm_config['ipconfig' +ipcfg.key |string] | default('') }}"
     updated_ip_config: "{{ 'ip=' + ipcfg.value.ip + ',gw=' + ipcfg.value.gateway }}"
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --ipconfig{{ ipcfg.key }} {{ updated_ip_config }}
   when: updated_ip_config != existing_ip_config
@@ -36,7 +36,7 @@
     current_network_devs: "{{ vm_config | dict2items | json_query(net_query) }}"
     network_devs: "{{ ['net'] | product((vm.value.network_devices | default({})).keys()) | map('join') | list }}"
     network_devs_to_remove: "{{ current_network_devs | difference(network_devs) | join(',') }}"
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --delete {{ network_devs_to_remove }}
   when: vm_remove_unreferenced and network_devs_to_remove | trim | length > 0
@@ -47,7 +47,7 @@
     current_ipconfigs: "{{ vm_config | dict2items | json_query(ipcfg_query) }}"
     ipconfigs: "{{ ['ipconfig'] | product((vm.value.ipconfig | default({})).keys()) | map('join') | list }}"
     ipconfigs_to_remove: "{{ current_ipconfigs | difference(ipconfigs) | join(',') }}"
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --delete {{ ipconfigs_to_remove }}
   when: vm_remove_unreferenced and ipconfigs_to_remove | trim | length > 0

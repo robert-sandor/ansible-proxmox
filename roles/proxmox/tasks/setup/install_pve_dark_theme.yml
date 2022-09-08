@@ -6,7 +6,7 @@
     mode: 0755
 
 - name: Run PVEDiscordDark install script
-  ansible.builtin.shell: bash /opt/PVEDiscordDark.sh install
+  ansible.builtin.command: bash /opt/PVEDiscordDark.sh install
   register: output
   changed_when: output.rc == 0
   failed_when: output.rc == 1

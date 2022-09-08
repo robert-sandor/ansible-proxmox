@@ -115,7 +115,7 @@
       {{ set_searchdomain }}\
       {{ set_tags }}\
       {{ delete_cfg }}"
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config {{ to_update | trim }}
   when: to_update | trim != ''
   changed_when: true

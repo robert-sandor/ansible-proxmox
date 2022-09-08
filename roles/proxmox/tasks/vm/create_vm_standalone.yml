@@ -14,7 +14,7 @@
       firewall={{ netdev.value.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }},\
       {{ ',tag=' + netdev.value.vlan_tag | string if netdev.value.vlan_tag is defined else '' }}
       {% endfor %}"
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh create /nodes/{{ ansible_facts.hostname }}/qemu
     --vmid {{ vm.key }}
     --name {{ vm.value.name }}

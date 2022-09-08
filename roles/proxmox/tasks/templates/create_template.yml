@@ -11,7 +11,7 @@
     template.key not in existing_vms | json_query('[].vmid')
   block:
     - name: Create a new VM
-      ansible.builtin.shell: >
+      ansible.builtin.command: >
         pvesh create /nodes/{{ ansible_facts.hostname }}/qemu --vmid {{ template.key }}
       changed_when: true
 
@@ -23,11 +23,11 @@
       register: downloaded_image
 
     - name: Import the downloaded disk
-      ansible.builtin.shell: qm importdisk {{ template.key }} {{ downloaded_image.dest }} {{ template.value.storage }}
+      ansible.builtin.command: qm importdisk {{ template.key }} {{ downloaded_image.dest }} {{ template.value.storage }}
       changed_when: true
 
     - name: Get VM configuration
-      ansible.builtin.shell: >
+      ansible.builtin.command: >
         pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ template.key }}/config --output-format json
       register: current_template_config
       changed_when: false
@@ -42,7 +42,7 @@
           firewall={{ netdev.value.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }},\
           {{ ',tag=' + netdev.value.vlan_tag | string if netdev.value.vlan_tag is defined else '' }}
           {% endfor %}"
-      ansible.builtin.shell: >
+      ansible.builtin.command: >
         pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ template.key }}/config
         --name {{ template.value.name }}
         --bios {{ template.value.bios | default(vm_defaults_bios) }}
@@ -65,5 +65,5 @@
       changed_when: true
 
     - name: Convert VM into a template
-      ansible.builtin.shell: pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ template.key }}/template
+      ansible.builtin.command: pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ template.key }}/template
       changed_when: true

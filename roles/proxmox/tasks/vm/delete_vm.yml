@@ -1,6 +1,6 @@
 ---
 - name: VM-{{ vm.key }}> Get current status of VM
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ vmid }}/status/current
     --output-format json
   changed_when: false
@@ -11,11 +11,11 @@
     vm_status: "{{ vm_status_response.stdout | from_json }}"
   block:
     - name: Stop VM if running
-      ansible.builtin.shell: >-
+      ansible.builtin.command: >-
         pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vmid }}/status/stop
       when: vm_status.status == 'running'
 
     - name: Delete VM
-      ansible.builtin.shell: >-
+      ansible.builtin.command: >-
         pvesh delete /nodes/{{ ansible_facts.hostname }}/qemu/{{ vmid }}
       changed_when: true

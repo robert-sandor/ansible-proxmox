@@ -1,6 +1,6 @@
 ---
 - name: VM-{{ vm.key }}> Get existing VM configuration
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config --output-format json
   register: vm_config_response
   changed_when: false
