@@ -1,6 +1,6 @@
 ---
 - name: Get existing containers
-  ansible.builtin.shell: pvesh get /nodes/{{ ansible_facts.hostname }}/lxc --output-format json
+  ansible.builtin.command: pvesh get /nodes/{{ ansible_facts.hostname }}/lxc --output-format json
   register: existing_containers
   changed_when: false
 

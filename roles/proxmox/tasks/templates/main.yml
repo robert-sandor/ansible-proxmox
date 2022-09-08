@@ -1,6 +1,6 @@
 ---
 - name: Get existing VMs
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/qemu --output-format json
   register: existing_vms_response
   changed_when: false

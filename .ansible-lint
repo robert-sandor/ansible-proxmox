@@ -1,7 +1,6 @@
 ---
 skip_list:
   - package-latest
-  - command-instead-of-shell
   - git-latest
 
 exclude_paths:

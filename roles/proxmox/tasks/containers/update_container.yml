@@ -1,6 +1,6 @@
 ---
 - name: Container {{ ct.key }}> Get existing container config
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/config
     --output-format json
   changed_when: false
@@ -50,7 +50,7 @@
           {{ ct_tags_cfg }}
           {{ delete_cfg }}
 
-      ansible.builtin.shell: >-
+      ansible.builtin.command: >-
         pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/config {{ updated_cfg | trim }}
       when: updated_cfg | trim != ''
       changed_when: true
@@ -67,7 +67,7 @@
           {{ ',ip=' + net.value.ip if net.value.ip is defined else '' }}\
           {{ ',tag=' + net.value.vlan_tag | string if net.value.vlan_tag is defined else '' }}\
           ,type=veth"
-      ansible.builtin.shell: >-
+      ansible.builtin.command: >-
         pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/config
         --net{{ net.key }} {{ updated_net_config }}
       when: updated_net_config != ct_config['net' +net.key |string]
@@ -78,7 +78,7 @@
     - name: Container {{ ct.key }}> Resize root filesystem
       vars:
         current_size: "{{ ct_config.rootfs | regex_search('size=([0-9]+)G', '\\1') }}"
-      ansible.builtin.shell: >-
+      ansible.builtin.command: >-
         pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/resize
         --disk rootfs
         --size {{ ct.value.rootfs.size }}G

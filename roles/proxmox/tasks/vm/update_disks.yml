@@ -9,7 +9,7 @@
       {% elif current_size[1] == 'K' %}{{ current_size[0] | int / 1024 / 1024 }} \
       {% elif current_size[1] == 'T' %}{{ current_size[0] | int * 1024 }}\
       {% endif %}"
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/resize
     --disk {{ disk.key }}
     --size {{ disk.value.size }}G
@@ -19,7 +19,7 @@
     loop_var: disk
 
 - name: VM-{{ vm.key }}> Create VM disk
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --{{ disk.key }} {{ disk.value.storage | default(vm.value.storage) }}:{{ disk.value.size }}
   when: vm_config[disk.key] is not defined

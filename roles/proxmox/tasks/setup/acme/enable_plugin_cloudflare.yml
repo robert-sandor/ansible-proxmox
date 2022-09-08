@@ -1,6 +1,6 @@
 ---
 - name: Get plugins
-  ansible.builtin.shell: pvesh get /cluster/acme/plugins --output-format json
+  ansible.builtin.command: pvesh get /cluster/acme/plugins --output-format json
   register: acme_plugins
   changed_when: false
 
@@ -9,7 +9,7 @@
     acme_plugin_data: |
       CF_Email={{ acme_plugin_cloudflare_email }}
       CF_Token={{ acme_plugin_cloudflare_token }}
-  ansible.builtin.shell: >
+  ansible.builtin.command: >
     pvesh create /cluster/acme/plugins
     --id cloudflare
     --api cf

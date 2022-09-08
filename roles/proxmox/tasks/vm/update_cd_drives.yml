@@ -1,6 +1,6 @@
 ---
 - name: VM-{{ vm.key }}> Attach ISO to VM
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --{{ cd_drive.key }} {{ cd_drive.value.storage }}:iso/{{ cd_drive.value.iso }},media=cdrom
   when: vm_config[cd_drive.key] is not defined
@@ -12,7 +12,7 @@
   vars:
     query: "[?starts_with(key, 'ide')].key"
     current_drives: "{{ vm_config | dict2items | json_query(query) }}"
-  ansible.builtin.shell: >-
+  ansible.builtin.command: >-
     pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --delete {{ ide_drive }}
   when: "'cloudinit' not in vm_config[ide_drive]"
