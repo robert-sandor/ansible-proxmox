@@ -47,7 +47,7 @@ vms:
     memory: 4096
     storage: local-lvm
     network_devices:
-      net0:
+      0:
     disks:
       scsi0:
         size: 50
@@ -70,11 +70,12 @@ vms:
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
-      ipconfig:
-        - ip: '192.168.1.21/24'
-          gateway: '192.168.1.1'
     network_devices:
-      net0:
+      0:
+    ipconfig:
+      0:
+        ip: '192.168.1.21/24'
+        gateway: '192.168.1.1'
     disks:
       scsi0:
         size: 50
@@ -89,11 +90,12 @@ vms:
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
-      ipconfig:
-        - ip: '192.168.1.22/24'
-          gateway: '192.168.1.1'
     network_devices:
-      net0:
+      0:
+    ipconfig:
+      0:
+        ip: '192.168.1.22/24'
+        gateway: '192.168.1.1'
     disks:
       scsi0:
         size: 50
@@ -108,11 +110,12 @@ vms:
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
-      ipconfig:
-        - ip: '192.168.1.23/24'
-          gateway: '192.168.1.1'
     network_devices:
-      net0:
+      0:
+    ipconfig:
+      0:
+        ip: '192.168.1.23/24'
+        gateway: '192.168.1.1'
     disks:
       scsi0:
         size: 50
@@ -126,11 +129,12 @@ vms:
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
-      ipconfig:
-        - ip: '192.168.1.31/24'
-          gateway: '192.168.1.1'
     network_devices:
-      net0:
+      0:
+    ipconfig:
+      0:
+        ip: '192.168.1.31/24'
+        gateway: '192.168.1.1'
     disks:
       scsi0:
         size: 50
@@ -146,11 +150,12 @@ vms:
     ci:
       user: rsandor
       ssh_keys: "{{ ssh_keys }}"
-      ipconfig:
-        - ip: '192.168.1.32/24'
-          gateway: '192.168.1.1'
     network_devices:
-      net0:
+      0:
+    ipconfig:
+      0:
+        ip: '192.168.1.32/24'
+        gateway: '192.168.1.1'
     disks:
       scsi0:
         size: 50
