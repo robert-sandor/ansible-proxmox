@@ -33,6 +33,7 @@
 
 - name: Set ACME configuration on node
   vars:
+    node_cfg: "{{ node_config.stdout | from_json }}"
     acme_account_config: account={{ acme_account_name }}
     acme_domain_config: "{{ ansible_facts.hostname }}.{{ domain }},plugin={{ acme_plugin_name }}"
   ansible.builtin.command: >
@@ -40,8 +41,8 @@
     --acme {{ acme_account_config }}
     --acmedomain0 {{ acme_domain_config }}
   when: >
-    acme_account_config not in node_config.stdout | from_json | json_query('acme') or
-    acme_domain_config not in node_config.stdout | from_json | json_query('acmedomain0')
+    acme_account_config not in node_cfg['acme'] | default('') or
+    acme_domain_config not in node_cfg['acmedomain0'] | default('')
 
 - name: Get certificate info
   ansible.builtin.command: pvesh get /nodes/{{ ansible_facts.hostname }}/certificates/info --output-format json
