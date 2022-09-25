@@ -1,12 +1,12 @@
 ---
-- name: VM {{ vm.key }} > Get pending updates for VM
+- name: Get pending updates for VM-{{ vm.key }}
   ansible.builtin.command: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/pending
     --output-format json
   changed_when: false
   register: pending_changes_response
 
-- name: Reboot VM if changes pending
+- name: Reboot VM if changes pending VM-{{ vm.key }}
   vars:
     changes_pending: "{{ pending_changes_response.stdout | from_json | \
       json_query('[].[pending, delete] | []') | length > 0 }}"

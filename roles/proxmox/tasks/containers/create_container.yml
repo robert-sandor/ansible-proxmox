@@ -1,5 +1,5 @@
 ---
-- name: Container {{ ct.key }}> Create new container
+- name: Create new container CT-{{ ct.key }}
   vars:
     netcfg: "{% for net in ct.value.network_devices | default({}) | dict2items %}
       --net{{ net.key }} name={{ net.value.name }},\

@@ -1,7 +1,7 @@
 ---
-- name: VM-{{ vm.key }}> Update network device
+- name: Update network device VM-{{ vm.key }}
   vars:
-    existing_net_config: "{{ vm_config['net' +netdev.key |string] | default('') }}"
+    existing_net_config: "{{ vm_config['net' + netdev.key | string] | default('') }}"
     net_config: "{{ '' if existing_net_config == '' else \
       existing_net_config | split(',') | map('split', '=') | items2dict(key_name=0, value_name=1) }}"
     type: "{{ netdev.value.type | default(vm_defaults_netdev_type) }}"
@@ -18,9 +18,9 @@
   loop_control:
     loop_var: netdev
 
-- name: VM-{{ vm.key }}> Update cloud-init ipconfigs
+- name: Update cloud-init ipconfigs VM-{{ vm.key }}
   vars:
-    existing_ip_config: "{{ vm_config['ipconfig' +ipcfg.key |string] | default('') }}"
+    existing_ip_config: "{{ vm_config['ipconfig' + ipcfg.key | string] | default('') }}"
     updated_ip_config: "{{ 'ip=' + ipcfg.value.ip + ',gw=' + ipcfg.value.gateway }}"
   ansible.builtin.command: >-
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
@@ -30,7 +30,7 @@
   loop_control:
     loop_var: ipcfg
 
-- name: VM-{{ vm.key }}> Remove undeclared network interfaces
+- name: Remove undeclared network interfaces VM-{{ vm.key }}
   vars:
     net_query: "[?starts_with(key, 'net')].key"
     current_network_devs: "{{ vm_config | dict2items | json_query(net_query) }}"
@@ -41,7 +41,7 @@
     --delete {{ network_devs_to_remove }}
   when: vm_remove_unreferenced and network_devs_to_remove | trim | length > 0
 
-- name: VM-{{ vm.key }}> Remove undeclared cloud-init ipconfigs
+- name: Remove undeclared cloud-init ipconfigs VM-{{ vm.key }}
   vars:
     ipcfg_query: "[?starts_with(key, 'ipconfig')].key"
     current_ipconfigs: "{{ vm_config | dict2items | json_query(ipcfg_query) }}"

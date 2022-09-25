@@ -1,5 +1,5 @@
 ---
-- name: Storage {{ storage_config.key }}> Get CT templates
+- name: Get CT templates Storage {{ storage_config.key }}
   ansible.builtin.command:
     pvesh get /nodes/{{ ansible_facts.hostname }}/storage/{{ storage_config.key }}/content
     --content vztmpl
@@ -7,18 +7,18 @@
   changed_when: false
   register: existing_ct_templates
 
-- name: Storage {{ storage_config.key }}> Get available CT images
+- name: Get available CT images Storage {{ storage_config.key }}
   ansible.builtin.command: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/aplinfo --output-format json
   changed_when: false
   register: aplinfo
 
-- name: Storage {{ storage_config.key }}> Update CT templates
+- name: Update CT templates Storage {{ storage_config.key }}
   vars:
     existing_ct_template_names:
       "{{ existing_ct_templates.stdout | from_json | json_query('[].volid') | map('basename') }}"
   block:
-    - name: Storage {{ storage_config.key }}> Download CT templates
+    - name: Download CT templates Storage {{ storage_config.key }}
       ansible.builtin.command: >-
         pvesh create /nodes/{{ ansible_facts.hostname }}/storage/{{ storage_config.key }}/download-url
         --content vztmpl
@@ -32,7 +32,7 @@
         search_query: "[?template == '{{ ct_template }}'].location"
         ct_template_url: "{{ aplinfo.stdout | from_json | json_query(search_query) }}"
 
-    - name: Storage {{ storage_config.key }}> Delete CT templates
+    - name: Delete CT templates Storage {{ storage_config.key }}
       ansible.builtin.command: >-
         pvesh delete /nodes/{{ ansible_facts.hostname }}/storage/{{ storage_config.key }}/content/{{ ct_template }}
       when: ct_template_remove_unreferenced and ct_template | basename not in storage_config.value.ct_templates

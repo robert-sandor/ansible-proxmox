@@ -1,11 +1,11 @@
 ---
-- name: VM-{{ vm.key }}> Get existing VM configuration
+- name: Get existing VM configuration VM-{{ vm.key }}
   ansible.builtin.command: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config --output-format json
   register: vm_config_response
   changed_when: false
 
-- name: VM-{{ vm.key }}> Update VM configuration
+- name: Update VM configuration VM-{{ vm.key }}
   vars:
     vm_config: "{{ vm_config_response.stdout | from_json }}"
   block:

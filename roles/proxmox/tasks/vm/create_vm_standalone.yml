@@ -1,5 +1,5 @@
 ---
-- name: VM-{{ vm.key }}> Create standalone VM
+- name: Create standalone VM-{{ vm.key }}
   vars:
     cd_drives: "{% for drive in vm.value.cd_drives | default({}) | dict2items %}\
       --{{ drive.key }} {{ drive.value.storage | default(vm.value.storage) }}:iso/{{ drive.value.iso }},media=cdrom \
