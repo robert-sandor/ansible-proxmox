@@ -22,7 +22,7 @@ jobs:
           python-version: '3.x'
 
       - name: install yamllint and ansible-lint
-        run: pip3 install yamllint ansible-lint ansible
+        run: pip3 install jmespath yamllint ansible-lint ansible
 
       - name: yamllint .
         run: yamllint .

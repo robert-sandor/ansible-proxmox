@@ -4,4 +4,5 @@
     pkg: "*"
     state: latest
     update_cache: true
+  when: update_packages
   notify: Reboot

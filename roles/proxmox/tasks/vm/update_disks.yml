@@ -1,5 +1,5 @@
 ---
-- name: VM-{{ vm.key }}> Resize VM disk
+- name: Resize VM disk VM-{{ vm.key }}
   vars:
     current_size: "{{ vm_config[disk.key] | default('') | \
       regex_search('size=([0-9]+)([KMGT]?)', '\\1', '\\2') }}"
@@ -18,7 +18,7 @@
   loop_control:
     loop_var: disk
 
-- name: VM-{{ vm.key }}> Create VM disk
+- name: Create VM disk VM-{{ vm.key }}
   ansible.builtin.command: >-
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --{{ disk.key }} {{ disk.value.storage | default(vm.value.storage) }}:{{ disk.value.size }}

@@ -1,16 +1,16 @@
 ---
-- name: Container {{ ct.key }}> Get existing container config
+- name: Get existing container config CT-{{ ct.key }}
   ansible.builtin.command: >-
     pvesh get /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/config
     --output-format json
   changed_when: false
   register: container_config
 
-- name: Container {{ ct.key }}> Update container
+- name: Update container CT-{{ ct.key }}
   vars:
     ct_config: "{{ container_config.stdout | from_json }}"
   block:
-    - name: Container {{ ct.key }}> Update container config
+    - name: Update container config CT-{{ ct.key }}
       vars:
         hostname: "{{ '--hostname ' + ct.value.hostname if ct.value.hostname != ct_config.hostname else '' }}"
         cores: "{{ ct.value.cores | default(container_defaults.cores) }}"
@@ -55,9 +55,9 @@
       when: updated_cfg | trim != ''
       changed_when: true
 
-    - name: Container {{ ct.key }}> Update container network device
+    - name: Update container network device CT-{{ ct.key }}
       vars:
-        net_config: "{{ ct_config['net' +net.key |string] | \
+        net_config: "{{ ct_config['net' + net.key | string] | \
           split(',') | map('split', '=') | items2dict(key_name=0, value_name=1) }}"
 
         updated_net_config: "name={{ net.value.name }},bridge={{ net.value.bridge }},\
@@ -70,12 +70,12 @@
       ansible.builtin.command: >-
         pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/config
         --net{{ net.key }} {{ updated_net_config }}
-      when: updated_net_config != ct_config['net' +net.key |string]
+      when: updated_net_config != ct_config['net' + net.key | string]
       with_items: "{{ ct.value.network_devices | default({}) | dict2items }}"
       loop_control:
         loop_var: net
 
-    - name: Container {{ ct.key }}> Resize root filesystem
+    - name: Resize root filesystem CT-{{ ct.key }}
       vars:
         current_size: "{{ ct_config.rootfs | regex_search('size=([0-9]+)G', '\\1') }}"
       ansible.builtin.command: >-

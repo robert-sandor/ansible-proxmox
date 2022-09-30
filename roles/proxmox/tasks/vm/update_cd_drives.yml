@@ -1,5 +1,5 @@
 ---
-- name: VM-{{ vm.key }}> Attach ISO to VM
+- name: Attach ISO to VM VM-{{ vm.key }}
   ansible.builtin.command: >-
     pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --{{ cd_drive.key }} {{ cd_drive.value.storage }}:iso/{{ cd_drive.value.iso }},media=cdrom
@@ -8,7 +8,7 @@
   loop_control:
     loop_var: cd_drive
 
-- name: VM-{{ vm.key }}> Remove ISO from VM
+- name: Remove ISO from VM VM-{{ vm.key }}
   vars:
     query: "[?starts_with(key, 'ide')].key"
     current_drives: "{{ vm_config | dict2items | json_query(query) }}"

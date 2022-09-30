@@ -1,5 +1,5 @@
 ---
-- name: VM-{{ vm.key }}> Update VM configuration
+- name: Update VM configuration VM-{{ vm.key }}
   vars:
     set_name: >-
       {{ ' --name "' + vm.value.name + '" '

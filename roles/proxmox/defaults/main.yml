@@ -1,4 +1,6 @@
 ---
+update_packages: true
+
 switch_to_community_updates_repo: true
 disable_no_subscription_prompt: true
 install_pve_discord_dark_theme: true
