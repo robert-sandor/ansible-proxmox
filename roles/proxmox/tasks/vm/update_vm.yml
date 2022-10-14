@@ -9,9 +9,15 @@
   vars:
     vm_config: "{{ vm_config_response.stdout | from_json }}"
   block:
-    - ansible.builtin.import_tasks: update_vm_config.yml
-    - ansible.builtin.import_tasks: update_network_devices.yml
-    - ansible.builtin.import_tasks: update_disks.yml
-    - ansible.builtin.import_tasks: update_cd_drives.yml
-    - ansible.builtin.import_tasks: reboot_updated_vm.yml
-    - ansible.builtin.import_tasks: update_snapshots.yml
+    - name: Update VM configuration
+      ansible.builtin.import_tasks: update_vm_config.yml
+    - name: Update VM network devices
+      ansible.builtin.import_tasks: update_network_devices.yml
+    - name: Update VM disks
+      ansible.builtin.import_tasks: update_disks.yml
+    - name: Update VM cd drives
+      ansible.builtin.import_tasks: update_cd_drives.yml
+    - name: Reboot VM if updated
+      ansible.builtin.import_tasks: reboot_updated_vm.yml
+    - name: Update VM snapshots
+      ansible.builtin.import_tasks: update_snapshots.yml

@@ -1,18 +1,23 @@
 ---
-- ansible.builtin.import_tasks: setup/main.yml
+- name: Setup Proxmox
+  ansible.builtin.import_tasks: setup/main.yml
   tags: setup
 
 - name: Flush handlers
   ansible.builtin.meta: flush_handlers
 
-- ansible.builtin.import_tasks: storage/main.yml
+- name: Setup storage
+  ansible.builtin.import_tasks: storage/main.yml
   tags: storage
 
-- ansible.builtin.import_tasks: templates/main.yml
+- name: Setup templates and isos
+  ansible.builtin.import_tasks: templates/main.yml
   tags: templates
 
-- ansible.builtin.import_tasks: vm/main.yml
+- name: Setup VMs
+  ansible.builtin.import_tasks: vm/main.yml
   tags: vms
 
-- ansible.builtin.import_tasks: containers/main.yml
+- name: Setup Containers
+  ansible.builtin.import_tasks: containers/main.yml
   tags: containers

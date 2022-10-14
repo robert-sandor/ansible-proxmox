@@ -34,7 +34,8 @@
 
     - name: Update VM configuration
       vars:
-        network_devices: "{{ template.value.network_devices | default({'net0':{'type': 'virtio', 'bridge': 'vmbr0'}}) | dict2items }}"
+        network_devices: "{{ template.value.network_devices | \
+          default({'net0':{'type': 'virtio', 'bridge': 'vmbr0'}}) | dict2items }}"
         network_devices_cfg: "{% for netdev in network_devices %}
           --{{ netdev.key }} {{ netdev.value.type | default(vm_defaults_netdev_type) }}\
           {{ '=' + netdev.value.mac if netdev.value.mac is defined else '' }},\
