@@ -8,7 +8,7 @@
       --{{ disk.key }} {{ disk.value.storage | default(vm.value.storage) }}:{{ disk.value.size }} \
       {% endfor %}"
     network_devices: "{% for netdev in vm.value.network_devices | dict2items %}
-      --{{ netdev.key }} {{ netdev.value.type | default(vm_defaults_netdev_type) }}\
+      --net{{ netdev.key }} {{ netdev.value.type | default(vm_defaults_netdev_type) }}\
       {{ '=' + netdev.value.mac if netdev.value.mac is defined else '' }},\
       bridge={{ netdev.value.bridge | default(vm_defaults_netdev_bridge) }},\
       firewall={{ netdev.value.firewall | default(container_defaults.netdev_firewall) | ternary(1, 0) }},\

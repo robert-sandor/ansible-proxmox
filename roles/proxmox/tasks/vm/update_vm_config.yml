@@ -38,7 +38,7 @@
       {{ ' --scsihw ' + vm.value.scsihw | default(vm_defaults_scsihw)
       if vm.value.scsihw | default(vm_defaults_scsihw) != vm_config.scsihw | default('') else '' }}
 
-    vm_tags: "{{ (vm.value.tags | default([]) + [managed_by_ansible_tag]) | join(',') }}"
+    vm_tags: "{{ (vm.value.tags | default([]) + [managed_by_ansible_tag]) | join(';') }}"
     set_tags: "{{ ' --tags ' + vm_tags if vm_tags != '' and vm_tags != vm_config.tags | default('') else '' }}"
 
     set_vga: >-

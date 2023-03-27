@@ -1,5 +1,7 @@
 ---
-domain: yavin.xyz
+domain: example.com
+
+update_packages: false
 
 switch_to_community_updates_repo: true
 disable_no_subscription_prompt: true

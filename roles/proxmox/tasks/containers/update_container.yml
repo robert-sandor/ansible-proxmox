@@ -69,7 +69,7 @@
           ,type=veth"
       ansible.builtin.command: >-
         pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/config
-        --net{{ net.key }} {{ updated_net_config }}
+        --  {{ net.key }} {{ updated_net_config }}
       when: updated_net_config != ct_config['net' + net.key | string]
       with_items: "{{ ct.value.network_devices | default({}) | dict2items }}"
       loop_control:
