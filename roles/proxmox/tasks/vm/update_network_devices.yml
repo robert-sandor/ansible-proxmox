@@ -14,6 +14,7 @@
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --net{{ netdev.key }} {{ updated_net_config }}
   when: updated_net_config != existing_net_config
+  changed_when: true
   with_items: "{{ vm.value.network_devices | default({}) | dict2items }}"
   loop_control:
     loop_var: netdev
@@ -26,6 +27,7 @@
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --ipconfig{{ ipcfg.key }} {{ updated_ip_config }}
   when: updated_ip_config != existing_ip_config
+  changed_when: true
   with_items: "{{ vm.value.ipconfig | default({}) | dict2items }}"
   loop_control:
     loop_var: ipcfg
@@ -40,6 +42,7 @@
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --delete {{ network_devs_to_remove }}
   when: vm_remove_unreferenced and network_devs_to_remove | trim | length > 0
+  changed_when: true
 
 - name: Remove undeclared cloud-init ipconfigs VM-{{ vm.key }}
   vars:
@@ -51,3 +54,4 @@
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --delete {{ ipconfigs_to_remove }}
   when: vm_remove_unreferenced and ipconfigs_to_remove | trim | length > 0
+  changed_when: true

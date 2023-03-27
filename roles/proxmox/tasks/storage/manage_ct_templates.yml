@@ -25,6 +25,7 @@
         --filename {{ ct_template | basename }}
         --url {{ ct_template_url[0] }}
       when: ct_template | basename not in existing_ct_template_names
+      changed_when: true
       with_items: "{{ storage_config.value.ct_templates }}"
       loop_control:
         loop_var: ct_template
@@ -36,6 +37,7 @@
       ansible.builtin.command: >-
         pvesh delete /nodes/{{ ansible_facts.hostname }}/storage/{{ storage_config.key }}/content/{{ ct_template }}
       when: ct_template_remove_unreferenced and ct_template | basename not in storage_config.value.ct_templates
+      changed_when: true
       with_items: "{{ existing_ct_templates.stdout | from_json | json_query('[].volid') }}"
       loop_control:
         loop_var: ct_template

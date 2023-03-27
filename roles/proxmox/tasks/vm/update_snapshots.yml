@@ -20,6 +20,7 @@
         pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/snapshot
         --snapname {{ snapshot_name }}
       when: vm.value.snapshots is defined
+      changed_when: true
       with_items: "{{ vm.value.snapshots.keys() | difference(existing_snapshot_names) }}"
       loop_control:
         loop_var: snapshot_name
@@ -28,6 +29,7 @@
       ansible.builtin.command: >-
         pvesh delete /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/snapshot/{{ snapshot_name }}
       when: existing_snapshot_names != []
+      changed_when: true
       with_items: "{{ existing_snapshot_names | difference(vm.value.snapshots.keys() \
         if vm.value.snapshots is defined else []) }}"
       loop_control:

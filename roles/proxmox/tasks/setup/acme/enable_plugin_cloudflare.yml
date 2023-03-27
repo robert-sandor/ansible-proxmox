@@ -16,3 +16,4 @@
     --type dns
     --data {{ acme_plugin_data | b64encode }}
   when: "'cloudflare' not in acme_plugins.stdout | from_json | json_query('[].plugin')"
+  changed_when: true

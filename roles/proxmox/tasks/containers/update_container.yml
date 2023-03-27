@@ -71,6 +71,7 @@
         pvesh set /nodes/{{ ansible_facts.hostname }}/lxc/{{ ct.key }}/config
         --  {{ net.key }} {{ updated_net_config }}
       when: updated_net_config != ct_config['net' + net.key | string]
+      changed_when: true
       with_items: "{{ ct.value.network_devices | default({}) | dict2items }}"
       loop_control:
         loop_var: net
@@ -83,3 +84,4 @@
         --disk rootfs
         --size {{ ct.value.rootfs.size }}G
       when: current_size[0] | int < ct.value.rootfs.size
+      changed_when: true

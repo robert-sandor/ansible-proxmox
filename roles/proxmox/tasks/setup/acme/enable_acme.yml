@@ -23,6 +23,7 @@
     --name {{ acme_account_name }}
     --tos_url {{ tos_url.stdout }}
   when: "acme_account_name not in acme_accounts.stdout | from_json | json_query('[].name')"
+  changed_when: true
 
 - name: Enable ACME plugin {{ acme_plugin_name }}
   ansible.builtin.include_tasks: enable_plugin_{{ acme_plugin_name }}.yml
@@ -44,6 +45,7 @@
   when: >
     acme_account_config not in node_cfg['acme'] | default('') or
     acme_domain_config not in node_cfg['acmedomain0'] | default('')
+  changed_when: true
 
 - name: Get certificate info
   ansible.builtin.command: pvesh get /nodes/{{ ansible_facts.hostname }}/certificates/info --output-format json
@@ -53,6 +55,7 @@
 - name: Order new certificate
   ansible.builtin.command: pvesh create /nodes/{{ ansible_facts.hostname }}/certificates/acme/certificate
   when: "'pveproxy-ssl.pem' not in certificate_info.stdout | from_json | json_query('[].filename')"
+  changed_when: true
 
 - name: Wait for certificate file
   ansible.builtin.wait_for:
