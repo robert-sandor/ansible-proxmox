@@ -2,6 +2,7 @@
 domain: example.com
 
 update_packages: false
+debian_version: bookworm # use bullseye for pve 7.x
 
 switch_to_community_updates_repo: true
 disable_no_subscription_prompt: true
@@ -42,7 +43,6 @@ storage:
       - debian-10-turnkey-gitea_16.1-1_amd64.tar.gz
 
 vms:
-
   100:
     name: new-vm
     cores: 4
@@ -76,8 +76,8 @@ vms:
       0:
     ipconfig:
       0:
-        ip: '192.168.1.21/24'
-        gateway: '192.168.1.1'
+        ip: "192.168.1.21/24"
+        gateway: "192.168.1.1"
     disks:
       scsi0:
         size: 50
@@ -96,8 +96,8 @@ vms:
       0:
     ipconfig:
       0:
-        ip: '192.168.1.22/24'
-        gateway: '192.168.1.1'
+        ip: "192.168.1.22/24"
+        gateway: "192.168.1.1"
     disks:
       scsi0:
         size: 50
@@ -116,8 +116,8 @@ vms:
       0:
     ipconfig:
       0:
-        ip: '192.168.1.23/24'
-        gateway: '192.168.1.1'
+        ip: "192.168.1.23/24"
+        gateway: "192.168.1.1"
     disks:
       scsi0:
         size: 50
@@ -135,8 +135,8 @@ vms:
       0:
     ipconfig:
       0:
-        ip: '192.168.1.31/24'
-        gateway: '192.168.1.1'
+        ip: "192.168.1.31/24"
+        gateway: "192.168.1.1"
     disks:
       scsi0:
         size: 50
@@ -156,8 +156,8 @@ vms:
       0:
     ipconfig:
       0:
-        ip: '192.168.1.32/24'
-        gateway: '192.168.1.1'
+        ip: "192.168.1.32/24"
+        gateway: "192.168.1.1"
     disks:
       scsi0:
         size: 50
@@ -165,7 +165,6 @@ vms:
       created:
 
 containers:
-
   1001:
     hostname: ubuntu-ct
     password: changeme
