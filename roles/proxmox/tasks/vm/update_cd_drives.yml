@@ -4,6 +4,7 @@
     pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --{{ cd_drive.key }} {{ cd_drive.value.storage }}:iso/{{ cd_drive.value.iso }},media=cdrom
   when: vm_config[cd_drive.key] is not defined
+  changed_when: true
   with_items: "{{ vm.value.cd_drives | default({}) | dict2items }}"
   loop_control:
     loop_var: cd_drive
@@ -16,6 +17,7 @@
     pvesh create /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --delete {{ ide_drive }}
   when: "'cloudinit' not in vm_config[ide_drive]"
+  changed_when: true
   with_items: "{{ current_drives | difference(vm.value.cd_drives.keys() if vm.value.cd_drives is defined else []) }}"
   loop_control:
     loop_var: ide_drive

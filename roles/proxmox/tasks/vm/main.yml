@@ -9,24 +9,28 @@
     existing_vms: "{{ existing_vms_response.stdout | from_json }}"
     existing_vm_ids: "{{ existing_vms | json_query('[].vmid') }}"
   block:
-    - ansible.builtin.include_tasks: create_vm.yml
+    - name: Create VM
+      ansible.builtin.include_tasks: create_vm.yml
       when: vm.key not in existing_vm_ids
       with_items: "{{ vms | default({}) | dict2items }}"
       loop_control:
         loop_var: vm
 
-    - ansible.builtin.include_tasks: update_vm.yml
+    - name: Update VM
+      ansible.builtin.include_tasks: update_vm.yml
       when: vm.key in existing_vm_ids
       with_items: "{{ vms | default({}) | dict2items }}"
       loop_control:
         loop_var: vm
 
-    - ansible.builtin.include_tasks: delete_vm.yml
+    - name: Delete VM
+      ansible.builtin.include_tasks: delete_vm.yml
       vars:
         template_query: "[?vmid==`{{ vmid }}`].template"
         tags_query: "[?vmid==`{{ vmid }}`].tags"
         template: "{{ existing_vms | json_query(template_query) == [1] }}"
-        managed: "{{ managed_by_ansible_tag in existing_vms | json_query(tags_query) | join(',') | split(',') }}"
+        managed: "{{ managed_by_ansible_tag in existing_vms | json_query(tags_query) | join(',') |
+          regex_replace(';', ',') | split(',') }}"
       when: vm_remove_unreferenced and vmid not in vms.keys() | default({}) and not template and managed
       with_items: "{{ existing_vm_ids }}"
       loop_control:

@@ -14,6 +14,7 @@
     --disk {{ disk.key }}
     --size {{ disk.value.size }}G
   when: vm_config[disk.key] is defined and current_size_in_gb | float < disk.value.size
+  changed_when: true
   with_items: "{{ vm.value.disks | dict2items }}"
   loop_control:
     loop_var: disk
@@ -23,6 +24,7 @@
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --{{ disk.key }} {{ disk.value.storage | default(vm.value.storage) }}:{{ disk.value.size }}
   when: vm_config[disk.key] is not defined
+  changed_when: true
   with_items: "{{ vm.value.disks | dict2items }}"
   loop_control:
     loop_var: disk
