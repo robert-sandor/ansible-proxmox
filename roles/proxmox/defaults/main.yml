@@ -17,12 +17,12 @@ container_remove_unreferenced: true
 vm_restart_timeout: 240
 
 vm_defaults_agent: false
-vm_defaults_bios: ovmf
+vm_defaults_bios: seabios
 vm_defaults_cores: 1
 vm_defaults_cpu: host
 vm_defaults_memory: 512
 vm_defaults_onboot: false
-vm_defaults_machine: q35
+vm_defaults_machine: i440fx
 vm_defaults_ostype: l26
 vm_defaults_scsihw: virtio-scsi-pci
 vm_defaults_sockets: 1
@@ -41,5 +41,5 @@ container_defaults:
   timezone: host
   start: false
   netdev_firewall: true
-  nameserver: ''
-  searchdomain: ''
+  nameserver: ""
+  searchdomain: ""
