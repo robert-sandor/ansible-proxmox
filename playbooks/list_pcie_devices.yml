@@ -1,0 +1,29 @@
+---
+# Simple playbook to list available PCIe devices on the Proxmox host
+#
+# Example:
+#
+# To list all images
+# ansible-playbook playbooks/list_pcie_devices.yml -i inventories/sample/hosts.yml
+#
+
+- hosts: all
+
+  name: List available PCIe devices
+
+  vars:
+    search: ""
+
+  tasks:
+    - name: Get PCIE devices list
+      ansible.builtin.command: >-
+        pvesh get /nodes/{{ ansible_facts.hostname }}/hardware/pci --output-format json
+      changed_when: false
+      register: pciedevices
+
+    - name: Print available PCIE devices list
+      ansible.builtin.debug:
+        msg: "{{ available_pcie_devices }}"
+      vars:
+        search_query: "[?contains(vendor_name, '{{ search }}')]"
+        available_pcie_devices: "{{ pciedevices.stdout | from_json | json_query(search_query) }}"
