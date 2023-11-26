@@ -1,14 +1,26 @@
 ---
-- name: Enable vfio for gpu passthrough
-  when: pcie_passthrough is defined
+- name: Enable PCIe passthrough on host
+  vars:
+    cpu_type: >-
+      {{
+      'amd' if 'AuthenticAMD' in ansible_facts.processor
+      else 'intel' if 'GenuineIntel' in ansible_facts.processor
+      else 'unknown'
+      }}
   block:
+    - name: Check cpu type {{ cpu_type }}
+      when: cpu_type == 'unknown'
+      ansible.builtin.fail:
+        msg: "Unsupported CPU type {{ cpu_type }}"
+
     - name: Add iommu support to grub
       ansible.builtin.lineinfile:
         path: /etc/default/grub
         regexp: >-
           ^GRUB_CMDLINE_LINUX_DEFAULT="quiet.*$
         line: GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on"
-      notify: Update-grub
+      notify: Update GRUB
+      when: "'intel' == cpu_type"
 
     - name: Add vfio modules
       ansible.builtin.blockinfile:
@@ -31,6 +43,7 @@
         group: root
         mode: '0644'
         create: true
+      when: pcie_passthrough.allow_unsafe_interrupts
 
     - name: Update kvm
       ansible.builtin.lineinfile:
@@ -61,4 +74,4 @@
         group: root
         mode: '0644'
         create: true
-      notify: Update-initramfs
+      notify: Update initramfs

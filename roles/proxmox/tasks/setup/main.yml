@@ -21,5 +21,7 @@
 - name: Install NGINX
   ansible.builtin.import_tasks: install_nginx.yml
   when: install_nginx_proxy
-- ansible.builtin.import_tasks: gpu_passthrough.yml
 
+- name: Setup GPU passthrough
+  ansible.builtin.import_tasks: pcie_passthrough.yml
+  when: pcie_passthrough.enable

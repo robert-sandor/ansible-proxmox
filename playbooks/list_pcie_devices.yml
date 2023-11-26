@@ -7,9 +7,9 @@
 # ansible-playbook playbooks/list_pcie_devices.yml -i inventories/sample/hosts.yml
 #
 
-- hosts: all
+- name: List available PCIe devices
 
-  name: List available PCIe devices
+  hosts: all
 
   vars:
     search: ""

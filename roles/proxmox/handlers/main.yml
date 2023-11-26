@@ -1,11 +1,13 @@
 ---
-- name: Update-grub
-  ansible.builtin.shell: update-grub
-  notify: reboot
+- name: Update GRUB
+  ansible.builtin.command: update-grub
+  changed_when: true
+  notify: Reboot
 
-- name: Update-initramfs
-  ansible.builtin.shell: update-initramfs -u
-  notify: reboot
+- name: Update initramfs
+  ansible.builtin.command: update-initramfs -u
+  changed_when: true
+  notify: Reboot
 
 - name: Reboot
   ansible.builtin.reboot:

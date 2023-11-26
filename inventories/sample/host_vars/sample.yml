@@ -24,16 +24,19 @@ acme_plugin_cloudflare_token: changeme
 # acme_plugin_azure_tenantid: changeme
 
 ssh_keys: changeme
+
 pcie_passthrough:
-  ids: 
-      - 10de:1c30
-      - 10de:10f1
-  blocklist: 
-      - nouveau
-      - nvidia
-      - radeon
-      - amdgpu  
-  
+  enable: true
+  allow_unsafe_interrupts: false
+  ids:
+    - 10de:1c30
+    - 10de:10f1
+  blocklist:
+    - nouveau
+    - nvidia
+    - radeon
+    - amdgpu
+    - i915
 
 vm_iso_remove_unreferenced: true
 ct_template_remove_unreferenced: true
