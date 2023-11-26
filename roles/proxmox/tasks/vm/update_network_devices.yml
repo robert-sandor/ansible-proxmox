@@ -22,7 +22,7 @@
 - name: Update cloud-init ipconfigs VM-{{ vm.key }}
   vars:
     existing_ip_config: "{{ vm_config['ipconfig' + ipcfg.key | string] | default('') }}"
-    updated_ip_config: "{{ 'ip=' + ipcfg.value.ip + ',gw=' + ipcfg.value.gateway }}"
+    updated_ip_config: "{{ 'ip=dhcp' if ipcfg.value.dhcp else 'ip=' + ipcfg.value.ip + ',gw=' + ipcfg.value.gateway }}"
   ansible.builtin.command: >-
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --ipconfig{{ ipcfg.key }} {{ updated_ip_config }}
