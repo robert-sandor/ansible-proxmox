@@ -66,11 +66,11 @@
     set_ssh_keys: >-
       {{ ' --sshkeys "' + vm.value.ci.ssh_keys | urlencode | replace('/', '%2f') + '" '
       if vm.value.ci.ssh_keys | default('') | length > 0 and
-      vm.value.ci.ssh_keys | default('') | urlencode | replace('/', '%2f') != vm_config.sshkeys | default('')
+      vm.value.ci.ssh_keys | default('') | urlencode | replace('/', '%2f') != vm_config.sshkeys | string | default('')
       else '' }}
     delete_ssh_keys: >-
       {{ 'sshkeys,' if vm.value.ci.ssh_keys | default('') | length == 0 and
-      vm_config.sshkeys | default('') | length > 0 else '' }}
+      vm_config.sshkeys | string | default('') | length > 0 else '' }}
 
     set_nameserver: >-
       {{ ' --nameserver "' + vm.value.ci.nameserver + '" '

@@ -9,9 +9,9 @@
 # To list images containing a keyword
 # ansible-playbook playbooks/list_ct_images.yml -i inventories/sample/hosts.yml -e "search=ubuntu"
 
-- hosts: all
+- name: List available CT images
 
-  name: List available CT images
+  hosts: all
 
   vars:
     search:
