@@ -7,7 +7,8 @@
     type: "{{ netdev.value.type | default(vm_defaults_netdev_type) }}"
     mac: "{{ netdev.value.mac | default(net_config[type] | default('')) }}"
     type_and_mac: "{{ type }}{{ '=' + mac if mac != '' else '' }}"
-    updated_net_config: "{{ type_and_mac }},bridge={{ netdev.value.bridge | default(vm_defaults_netdev_bridge) }},\
+    updated_net_config:
+      "{{ type_and_mac }},bridge={{ netdev.value.bridge | default(vm_defaults_netdev_bridge) }},\
       firewall={{ netdev.value.firewall | default(vm_defaults_netdev_firewall) | ternary(1, 0) }}\
       {{ ',tag=' + netdev.value.vlan_tag | string if netdev.value.vlan_tag is defined else '' }}"
   ansible.builtin.command: >-
@@ -22,7 +23,8 @@
 - name: Update cloud-init ipconfigs VM-{{ vm.key }}
   vars:
     existing_ip_config: "{{ vm_config['ipconfig' + ipcfg.key | string] | default('') }}"
-    updated_ip_config: "{{ 'ip=dhcp' if ipcfg.value.dhcp else 'ip=' + ipcfg.value.ip + ',gw=' + ipcfg.value.gateway }}"
+    updated_ip_config: >
+      {{ 'ip=dhcp' if ipcfg.value.dhcp | default(false) else 'ip=' + ipcfg.value.ip + ',gw=' + ipcfg.value.gateway }}
   ansible.builtin.command: >-
     pvesh set /nodes/{{ ansible_facts.hostname }}/qemu/{{ vm.key }}/config
     --ipconfig{{ ipcfg.key }} {{ updated_ip_config }}
